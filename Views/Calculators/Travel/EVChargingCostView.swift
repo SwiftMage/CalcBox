@@ -17,13 +17,13 @@ struct EVChargingCostView: View {
     
     enum ChargeLevel: String, CaseIterable {
         case home = "Home (Level 2)"
-        case public = "Public (Level 2)"
+        case publicCharging = "Public (Level 2)"
         case fastCharging = "DC Fast Charging"
         
         var defaultRate: Double {
             switch self {
             case .home: return 0.13
-            case .public: return 0.20
+            case .publicCharging: return 0.20
             case .fastCharging: return 0.35
             }
         }

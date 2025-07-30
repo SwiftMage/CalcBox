@@ -217,6 +217,7 @@ struct CompoundInterestView: View {
                 if showResults {
                     VStack(spacing: 16) {
                         Divider()
+                            .id("results")
                         
                         Text("Results")
                             .font(.title2)

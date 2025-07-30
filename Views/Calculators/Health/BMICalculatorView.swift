@@ -104,68 +104,95 @@ struct BMICalculatorView: View {
             title: "Body Mass Index",
             description: "Calculate BMI and assess health risks"
         ) {
-            VStack(spacing: 20) {
+            VStack(spacing: 24) {
                 // Unit System Selection
-                SegmentedPicker(
+                SegmentedInputField(
                     title: "Unit System",
                     selection: $unitSystem,
-                    options: UnitSystem.allCases.map { ($0, $0.rawValue) }
+                    options: UnitSystem.allCases.map { ($0, $0.rawValue) },
+                    icon: "ruler.fill",
+                    color: .blue
                 )
                 
-                // Input Fields
-                VStack(spacing: 16) {
+                // Main Measurements
+                GroupedInputFields(
+                    title: "Body Measurements",
+                    icon: "figure.stand",
+                    color: .red
+                ) {
                     if unitSystem == .imperial {
-                        CalculatorInputField(
+                        ModernInputField(
                             title: "Weight",
                             value: $weight,
                             placeholder: "150",
-                            suffix: "lbs"
+                            suffix: "lbs",
+                            icon: "scalemass.fill",
+                            color: .red,
+                            helpText: "Your current body weight in pounds"
                         )
                         
                         HStack(spacing: 16) {
-                            CalculatorInputField(
+                            CompactInputField(
                                 title: "Height (Feet)",
                                 value: $heightFeet,
                                 placeholder: "5",
-                                suffix: "ft"
+                                suffix: "ft",
+                                color: .blue
                             )
                             
-                            CalculatorInputField(
+                            CompactInputField(
                                 title: "Height (Inches)",
                                 value: $heightInches,
                                 placeholder: "10",
-                                suffix: "in"
+                                suffix: "in",
+                                color: .blue
                             )
                         }
                     } else {
-                        CalculatorInputField(
+                        ModernInputField(
                             title: "Weight",
                             value: $weight,
                             placeholder: "70",
-                            suffix: "kg"
+                            suffix: "kg",
+                            icon: "scalemass.fill",
+                            color: .red,
+                            helpText: "Your current body weight in kilograms"
                         )
                         
-                        CalculatorInputField(
+                        ModernInputField(
                             title: "Height",
                             value: $heightCm,
                             placeholder: "175",
-                            suffix: "cm"
+                            suffix: "cm",
+                            icon: "ruler.fill",
+                            color: .blue,
+                            helpText: "Your height in centimeters"
                         )
                     }
-                    
-                    // Optional fields
+                }
+                
+                // Optional Information
+                GroupedInputFields(
+                    title: "Additional Information (Optional)",
+                    icon: "person.fill",
+                    color: .purple
+                ) {
                     HStack(spacing: 16) {
-                        CalculatorInputField(
-                            title: "Age (optional)",
+                        CompactInputField(
+                            title: "Age",
                             value: $age,
                             placeholder: "30",
-                            suffix: "years"
+                            suffix: "years",
+                            color: .purple
                         )
                         
                         VStack(alignment: .leading, spacing: 8) {
-                            Text("Gender (optional)")
-                                .font(.subheadline)
+                            Text("Gender")
+                                .font(.caption)
+                                .fontWeight(.medium)
                                 .foregroundColor(.secondary)
+                                .textCase(.uppercase)
+                                .tracking(0.5)
                             
                             Picker("Gender", selection: $gender) {
                                 ForEach(Gender.allCases, id: \.self) { gender in
@@ -174,7 +201,8 @@ struct BMICalculatorView: View {
                             }
                             .pickerStyle(MenuPickerStyle())
                             .frame(maxWidth: .infinity)
-                            .padding()
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 12)
                             .background(Color(.systemGray6))
                             .clipShape(RoundedRectangle(cornerRadius: 12))
                         }
@@ -192,6 +220,7 @@ struct BMICalculatorView: View {
                 if showResults && bmi > 0 {
                     VStack(spacing: 20) {
                         Divider()
+                            .id("results")
                         
                         Text("Your BMI Results")
                             .font(.title2)

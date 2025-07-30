@@ -77,80 +77,134 @@ struct MortgageCalculatorView: View {
             title: "Mortgage Calculator",
             description: "Calculate your monthly mortgage payment"
         ) {
-            VStack(spacing: 20) {
+            ScrollViewReader { proxy in
+            VStack(spacing: 24) {
                 // Loan Details
-                VStack(alignment: .leading, spacing: 16) {
-                    Text("Loan Details")
-                        .font(.headline)
-                    
-                    CalculatorInputField(
+                GroupedInputFields(
+                    title: "Loan Details",
+                    icon: "house.fill",
+                    color: .blue
+                ) {
+                    ModernInputField(
                         title: "Home Price",
                         value: $homePrice,
-                        placeholder: "400000",
-                        suffix: "$"
+                        placeholder: "400,000",
+                        prefix: "$",
+                        icon: "house.circle.fill",
+                        color: .green,
+                        helpText: "Total purchase price of the home"
                     )
                     
-                    CalculatorInputField(
-                        title: "Down Payment",
-                        value: $downPayment,
-                        placeholder: "80000",
-                        suffix: "$"
-                    )
-                    
-                    if !downPayment.isEmpty && !homePrice.isEmpty {
-                        Text("\(NumberFormatter.formatPercent(downPaymentPercentage)) down")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
+                    VStack(spacing: 16) {
+                        ModernInputField(
+                            title: "Down Payment",
+                            value: $downPayment,
+                            placeholder: "80,000",
+                            prefix: "$",
+                            icon: "banknote.fill",
+                            color: .blue,
+                            helpText: "Amount paid upfront (typically 10-20%)"
+                        )
+                        
+                        if !downPayment.isEmpty && !homePrice.isEmpty {
+                            HStack {
+                                Image(systemName: "percent")
+                                    .foregroundColor(.orange)
+                                Text("Down Payment: \(NumberFormatter.formatPercent(downPaymentPercentage))")
+                                    .font(.subheadline)
+                                    .fontWeight(.medium)
+                                    .foregroundColor(.orange)
+                                Spacer()
+                            }
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 8)
+                            .background(Color.orange.opacity(0.1))
+                            .clipShape(RoundedRectangle(cornerRadius: 8))
+                        }
                     }
                     
-                    CalculatorInputField(
-                        title: "Interest Rate",
-                        value: $interestRate,
-                        placeholder: "6.5",
-                        suffix: "%"
-                    )
-                    
-                    CalculatorInputField(
-                        title: "Loan Term",
-                        value: $loanTerm,
-                        placeholder: "30",
-                        suffix: "years"
-                    )
+                    HStack(spacing: 16) {
+                        CompactInputField(
+                            title: "Interest Rate",
+                            value: $interestRate,
+                            placeholder: "6.5",
+                            suffix: "%",
+                            color: .orange
+                        )
+                        
+                        CompactInputField(
+                            title: "Loan Term",
+                            value: $loanTerm,
+                            placeholder: "30",
+                            suffix: "years",
+                            color: .purple
+                        )
+                    }
                 }
                 
                 // Additional Costs
-                VStack(alignment: .leading, spacing: 16) {
-                    Text("Additional Costs")
-                        .font(.headline)
-                    
-                    CalculatorInputField(
-                        title: "Annual Property Tax",
-                        value: $propertyTax,
-                        placeholder: "5000",
-                        suffix: "$/year"
-                    )
-                    
-                    CalculatorInputField(
-                        title: "Annual Home Insurance",
-                        value: $homeInsurance,
-                        placeholder: "1200",
-                        suffix: "$/year"
-                    )
-                    
-                    CalculatorInputField(
-                        title: "Monthly HOA Fees",
-                        value: $hoa,
-                        placeholder: "200",
-                        suffix: "$/month"
-                    )
-                    
-                    if downPaymentPercentage < 20 {
-                        CalculatorInputField(
-                            title: "Monthly PMI",
-                            value: $pmi,
-                            placeholder: "200",
-                            suffix: "$/month"
+                GroupedInputFields(
+                    title: "Additional Monthly Costs",
+                    icon: "doc.text.fill",
+                    color: .orange
+                ) {
+                    HStack(spacing: 16) {
+                        CompactInputField(
+                            title: "Property Tax",
+                            value: $propertyTax,
+                            placeholder: "5,000",
+                            prefix: "$",
+                            color: .red
                         )
+                        
+                        CompactInputField(
+                            title: "Home Insurance",
+                            value: $homeInsurance,
+                            placeholder: "1,200",
+                            prefix: "$",
+                            color: .green
+                        )
+                    }
+                    
+                    HStack(spacing: 16) {
+                        CompactInputField(
+                            title: "HOA Fees",
+                            value: $hoa,
+                            placeholder: "200",
+                            prefix: "$",
+                            color: .purple
+                        )
+                        
+                        if downPaymentPercentage < 20 {
+                            CompactInputField(
+                                title: "PMI",
+                                value: $pmi,
+                                placeholder: "200",
+                                prefix: "$",
+                                color: .orange
+                            )
+                        } else {
+                            VStack(alignment: .leading, spacing: 8) {
+                                Text("PMI")
+                                    .font(.caption)
+                                    .fontWeight(.medium)
+                                    .foregroundColor(.secondary)
+                                    .textCase(.uppercase)
+                                    .tracking(0.5)
+                                
+                                HStack {
+                                    Image(systemName: "checkmark.circle.fill")
+                                        .foregroundColor(.green)
+                                    Text("Not Required")
+                                        .font(.subheadline)
+                                        .foregroundColor(.green)
+                                }
+                                .padding(.horizontal, 16)
+                                .padding(.vertical, 12)
+                                .background(Color.green.opacity(0.1))
+                                .clipShape(RoundedRectangle(cornerRadius: 12))
+                            }
+                        }
                     }
                 }
                 
@@ -160,12 +214,19 @@ struct MortgageCalculatorView: View {
                     withAnimation {
                         showResults = true
                     }
+                    // Scroll to results after animation
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                        withAnimation(.easeInOut(duration: 0.5)) {
+                            proxy.scrollTo("results", anchor: .top)
+                        }
+                    }
                 }
                 
                 // Results
                 if showResults {
                     VStack(spacing: 20) {
                         Divider()
+                            .id("results")
                         
                         Text("Monthly Payment Breakdown")
                             .font(.title2)
@@ -190,19 +251,22 @@ struct MortgageCalculatorView: View {
                         )
                         
                         // Loan Summary
-                        HStack(spacing: 16) {
+                        HStack(spacing: 12) {
                             CalculatorResultCard(
                                 title: "Loan Amount",
                                 value: NumberFormatter.formatCurrency(loanAmount),
                                 color: .orange
                             )
+                            .minimumScaleFactor(0.8)
                             
                             CalculatorResultCard(
                                 title: "Total Interest",
                                 value: NumberFormatter.formatCurrency(totalInterest),
                                 color: .red
                             )
+                            .minimumScaleFactor(0.8)
                         }
+                        .fixedSize(horizontal: false, vertical: true)
                         
                         // Amortization Preview
                         if !amortizationSchedule.isEmpty {
@@ -234,6 +298,7 @@ struct MortgageCalculatorView: View {
                     }
                     .transition(.move(edge: .bottom).combined(with: .opacity))
                 }
+            }
             }
         }
     }
