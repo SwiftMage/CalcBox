@@ -13,29 +13,7 @@ struct MortgageCalculatorView: View {
     
     @State private var showResults = false
     @State private var amortizationSchedule: [AmortizationItem] = []
-    @State private var isDemoActive = false
     @State private var showInfo = false
-    @State private var savedCalculations: [SavedCalculation] = []
-    @State private var showCompare = false
-    
-    // Focus and keyboard management
-    @FocusState private var focusedField: MortgageField?
-    @StateObject private var keyboardObserver = KeyboardObserver()
-    
-    enum MortgageField: CaseIterable {
-        case homePrice, downPayment, interestRate, loanTerm, propertyTax, homeInsurance, hoa, pmi
-    }
-    
-    struct SavedCalculation: Identifiable {
-        let id = UUID()
-        let homePrice: String
-        let downPayment: String
-        let interestRate: String
-        let loanTerm: String
-        let monthlyPayment: Double
-        let totalInterest: Double
-        let dateSaved: Date
-    }
     
     struct AmortizationItem: Identifiable {
         let id = UUID()
@@ -101,7 +79,7 @@ struct MortgageCalculatorView: View {
             description: "Calculate your monthly mortgage payment"
         ) {
             ScrollViewReader { proxy in
-                VStack(spacing: 20) {
+            VStack(spacing: 24) {
                 // Quick Action Buttons
                 HStack(spacing: 8) {
                     QuickActionButton(
@@ -136,136 +114,149 @@ struct MortgageCalculatorView: View {
                         ) {
                             shareResults()
                         }
-                        
-                        QuickActionButton(
-                            icon: "chart.bar.xaxis",
-                            title: "Compare",
-                            color: .orange
-                        ) {
-                            saveForComparison()
-                        }
                     }
                 }
+                
                 // Loan Details
-                VStack(alignment: .leading, spacing: 16) {
-                    Text("Loan Details")
-                        .font(.headline)
-                    
-                    DecimalPadInputField(
+                GroupedInputFields(
+                    title: "Loan Details",
+                    icon: "house.fill",
+                    color: .blue
+                ) {
+                    ModernInputField(
                         title: "Home Price",
-                        text: $homePrice,
+                        value: $homePrice,
                         placeholder: "400,000",
-                        suffix: "$",
-                        onNext: { focusNextField(.homePrice) },
-                        onDone: { focusedField = nil },
-                        isCurrency: true
+                        prefix: "$",
+                        icon: "house.circle.fill",
+                        color: .green,
+                        helpText: "Total purchase price of the home"
                     )
-                    .focused($focusedField, equals: .homePrice)
-                    .id(MortgageField.homePrice)
                     
-                    DecimalPadInputField(
-                        title: "Down Payment",
-                        text: $downPayment,
-                        placeholder: "80,000",
-                        suffix: "$",
-                        onNext: { focusNextField(.downPayment) },
-                        onDone: { focusedField = nil },
-                        isCurrency: true
-                    )
-                    .focused($focusedField, equals: .downPayment)
-                    .id(MortgageField.downPayment)
-                    
-                    if !downPayment.isEmpty && !homePrice.isEmpty {
-                        Text("\\(NumberFormatter.formatPercent(downPaymentPercentage)) down")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
+                    VStack(spacing: 16) {
+                        ModernInputField(
+                            title: "Down Payment",
+                            value: $downPayment,
+                            placeholder: "80,000",
+                            prefix: "$",
+                            icon: "banknote.fill",
+                            color: .blue,
+                            helpText: "Amount paid upfront (typically 10-20%)"
+                        )
+                        
+                        if !downPayment.isEmpty && !homePrice.isEmpty {
+                            HStack {
+                                Image(systemName: "percent")
+                                    .foregroundColor(.orange)
+                                Text("Down Payment: \(NumberFormatter.formatPercent(downPaymentPercentage))")
+                                    .font(.subheadline)
+                                    .fontWeight(.medium)
+                                    .foregroundColor(.orange)
+                                Spacer()
+                            }
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 8)
+                            .background(Color.orange.opacity(0.1))
+                            .clipShape(RoundedRectangle(cornerRadius: 8))
+                        }
                     }
                     
-                    DecimalPadInputField(
-                        title: "Interest Rate",
-                        text: $interestRate,
-                        placeholder: "6.5",
-                        suffix: "%",
-                        onNext: { focusNextField(.interestRate) },
-                        onDone: { focusedField = nil }
-                    )
-                    .focused($focusedField, equals: .interestRate)
-                    .id(MortgageField.interestRate)
-                    
-                    DecimalPadInputField(
-                        title: "Loan Term",
-                        text: $loanTerm,
-                        placeholder: "30",
-                        suffix: "years",
-                        onNext: { focusNextField(.loanTerm) },
-                        onDone: { focusedField = nil }
-                    )
-                    .focused($focusedField, equals: .loanTerm)
-                    .id(MortgageField.loanTerm)
+                    HStack(spacing: 16) {
+                        CompactInputField(
+                            title: "Interest Rate",
+                            value: $interestRate,
+                            placeholder: "6.5",
+                            suffix: "%",
+                            color: .orange
+                        )
+                        
+                        CompactInputField(
+                            title: "Loan Term",
+                            value: $loanTerm,
+                            placeholder: "30",
+                            suffix: "years",
+                            color: .purple
+                        )
+                    }
                 }
                 
                 // Additional Costs
-                VStack(alignment: .leading, spacing: 16) {
-                    Text("Additional Costs")
-                        .font(.headline)
-                    
-                    DecimalPadInputField(
-                        title: "Annual Property Tax",
-                        text: $propertyTax,
-                        placeholder: "5,000",
-                        suffix: "$/year",
-                        onNext: { focusNextField(.propertyTax) },
-                        onDone: { focusedField = nil },
-                        isCurrency: true
-                    )
-                    .focused($focusedField, equals: .propertyTax)
-                    .id(MortgageField.propertyTax)
-                    
-                    DecimalPadInputField(
-                        title: "Annual Home Insurance",
-                        text: $homeInsurance,
-                        placeholder: "1,200",
-                        suffix: "$/year",
-                        onNext: { focusNextField(.homeInsurance) },
-                        onDone: { focusedField = nil },
-                        isCurrency: true
-                    )
-                    .focused($focusedField, equals: .homeInsurance)
-                    .id(MortgageField.homeInsurance)
-                    
-                    DecimalPadInputField(
-                        title: "Monthly HOA Fees",
-                        text: $hoa,
-                        placeholder: "200",
-                        suffix: "$/month",
-                        onNext: { focusNextField(.hoa) },
-                        onDone: { focusedField = nil },
-                        isCurrency: true
-                    )
-                    .focused($focusedField, equals: .hoa)
-                    .id(MortgageField.hoa)
-                    
-                    if downPaymentPercentage < 20 {
-                        DecimalPadInputField(
-                            title: "Monthly PMI",
-                            text: $pmi,
-                            placeholder: "200",
-                            suffix: "$/month",
-                            onNext: { focusedField = nil },
-                            onDone: { focusedField = nil },
-                            showNextButton: false,
-                            isCurrency: true
+                GroupedInputFields(
+                    title: "Additional Monthly Costs",
+                    icon: "doc.text.fill",
+                    color: .orange
+                ) {
+                    HStack(spacing: 16) {
+                        CompactInputField(
+                            title: "Property Tax",
+                            value: $propertyTax,
+                            placeholder: "5,000",
+                            prefix: "$",
+                            color: .red
                         )
-                        .focused($focusedField, equals: .pmi)
-                        .id(MortgageField.pmi)
+                        
+                        CompactInputField(
+                            title: "Home Insurance",
+                            value: $homeInsurance,
+                            placeholder: "1,200",
+                            prefix: "$",
+                            color: .green
+                        )
+                    }
+                    
+                    HStack(spacing: 16) {
+                        CompactInputField(
+                            title: "HOA Fees",
+                            value: $hoa,
+                            placeholder: "200",
+                            prefix: "$",
+                            color: .purple
+                        )
+                        
+                        if downPaymentPercentage < 20 {
+                            CompactInputField(
+                                title: "PMI",
+                                value: $pmi,
+                                placeholder: "200",
+                                prefix: "$",
+                                color: .orange
+                            )
+                        } else {
+                            VStack(alignment: .leading, spacing: 8) {
+                                Text("PMI")
+                                    .font(.caption)
+                                    .fontWeight(.medium)
+                                    .foregroundColor(.secondary)
+                                    .textCase(.uppercase)
+                                    .tracking(0.5)
+                                
+                                HStack {
+                                    Image(systemName: "checkmark.circle.fill")
+                                        .foregroundColor(.green)
+                                    Text("Not Required")
+                                        .font(.subheadline)
+                                        .foregroundColor(.green)
+                                }
+                                .padding(.horizontal, 16)
+                                .padding(.vertical, 12)
+                                .background(Color.green.opacity(0.1))
+                                .clipShape(RoundedRectangle(cornerRadius: 12))
+                            }
+                        }
                     }
                 }
                 
                 // Calculate Button
-                CalculatorButton(title: "Calculate Monthly Payment") {
+                CalculatorButton(title: "Calculate Payment") {
                     calculateAmortization()
                     withAnimation {
                         showResults = true
+                    }
+                    // Scroll to results after animation
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                        withAnimation(.easeInOut(duration: 0.5)) {
+                            proxy.scrollTo("results", anchor: .top)
+                        }
                     }
                 }
                 
@@ -273,6 +264,7 @@ struct MortgageCalculatorView: View {
                 if showResults {
                     VStack(spacing: 20) {
                         Divider()
+                            .id("results")
                         
                         Text("Monthly Payment Breakdown")
                             .font(.title2)
@@ -292,24 +284,27 @@ struct MortgageCalculatorView: View {
                         CalculatorResultCard(
                             title: "Total Monthly Payment",
                             value: NumberFormatter.formatCurrency(totalMonthlyPayment),
-                            subtitle: "Principal & Interest: \\(NumberFormatter.formatCurrency(monthlyPrincipalAndInterest))",
+                            subtitle: "Principal & Interest: \(NumberFormatter.formatCurrency(monthlyPrincipalAndInterest))",
                             color: .blue
                         )
                         
                         // Loan Summary
-                        HStack(spacing: 16) {
+                        HStack(spacing: 12) {
                             CalculatorResultCard(
                                 title: "Loan Amount",
                                 value: NumberFormatter.formatCurrency(loanAmount),
                                 color: .orange
                             )
+                            .minimumScaleFactor(0.8)
                             
                             CalculatorResultCard(
                                 title: "Total Interest",
                                 value: NumberFormatter.formatCurrency(totalInterest),
                                 color: .red
                             )
+                            .minimumScaleFactor(0.8)
                         }
+                        .fixedSize(horizontal: false, vertical: true)
                         
                         // Amortization Preview
                         if !amortizationSchedule.isEmpty {
@@ -341,140 +336,12 @@ struct MortgageCalculatorView: View {
                     }
                     .transition(.move(edge: .bottom).combined(with: .opacity))
                 }
-                .padding(.bottom, keyboardObserver.keyboardHeight > 0 ? keyboardObserver.keyboardHeight - 50 : 0)
-                .animation(.easeInOut(duration: 0.3), value: keyboardObserver.keyboardHeight)
             }
-            .onChange(of: focusedField) { field in
-                if let field = field {
-                    withAnimation(.easeInOut(duration: 0.5)) {
-                        proxy.scrollTo(field, anchor: .center)
-                    }
-                }
             }
         }
         .sheet(isPresented: $showInfo) {
             MortgageInfoSheet()
         }
-        .sheet(isPresented: $showCompare) {
-            ComparisonSheet(calculations: savedCalculations)
-        }
-    }
-    
-    private func fillLoanDetailsDemo() {
-        homePrice = "400000"
-        downPayment = "80000"
-        interestRate = "6.5"
-        loanTerm = "30"
-        
-        // Add haptic feedback
-        let impactFeedback = UIImpactFeedbackGenerator(style: .light)
-        impactFeedback.impactOccurred()
-    }
-    
-    private func clearLoanDetails() {
-        homePrice = ""
-        downPayment = ""
-        interestRate = ""
-        loanTerm = ""
-        
-        withAnimation {
-            showResults = false
-        }
-        amortizationSchedule = []
-    }
-    
-    private func fillAdditionalCostsDemo() {
-        propertyTax = "5000"
-        homeInsurance = "1200"
-        hoa = "200"
-        pmi = "200"
-        
-        // Add haptic feedback
-        let impactFeedback = UIImpactFeedbackGenerator(style: .light)
-        impactFeedback.impactOccurred()
-    }
-    
-    private func clearAdditionalCosts() {
-        propertyTax = ""
-        homeInsurance = ""
-        hoa = ""
-        pmi = ""
-        
-        withAnimation {
-            showResults = false
-        }
-        amortizationSchedule = []
-    }
-    
-    private func fillDemoData() {
-        fillLoanDetailsDemo()
-        fillAdditionalCostsDemo()
-        isDemoActive = true
-        
-        // Auto-calculate after filling demo data
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-            calculateAmortization()
-            withAnimation {
-                showResults = true
-            }
-        }
-    }
-    
-    private func clearDemoData() {
-        clearLoanDetails()
-        clearAdditionalCosts()
-        isDemoActive = false
-    }
-    
-    private func fillDemoDataAndCalculate() {
-        fillDemoData()
-        calculateAmortization()
-        withAnimation {
-            showResults = true
-        }
-    }
-    
-    private func clearAllData() {
-        clearDemoData()
-        withAnimation {
-            showResults = false
-        }
-        amortizationSchedule = []
-    }
-    
-    private func shareResults() {
-        // Share implementation - could open share sheet
-        let shareText = \"\"\"
-        Mortgage Calculation Results:
-        Home Price: $\\(homePrice)
-        Down Payment: $\\(downPayment) (\\(NumberFormatter.formatPercent(downPaymentPercentage)))
-        Monthly Payment: \\(NumberFormatter.formatCurrency(totalMonthlyPayment))
-        Total Interest: \\(NumberFormatter.formatCurrency(totalInterest))
-        \"\"\"
-        
-        let activityVC = UIActivityViewController(
-            activityItems: [shareText],
-            applicationActivities: nil
-        )
-        
-        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-           let window = windowScene.windows.first {
-            window.rootViewController?.present(activityVC, animated: true)
-        }
-    }
-    
-    private func saveForComparison() {
-        let calculation = SavedCalculation(
-            homePrice: homePrice,
-            downPayment: downPayment,
-            interestRate: interestRate,
-            loanTerm: loanTerm,
-            monthlyPayment: totalMonthlyPayment,
-            totalInterest: totalInterest,
-            dateSaved: Date()
-        )
-        savedCalculations.append(calculation)
-        showCompare = true
     }
     
     private func calculateAmortization() {
@@ -507,15 +374,55 @@ struct MortgageCalculatorView: View {
         amortizationSchedule = schedule
     }
     
-    private func focusNextField(_ currentField: MortgageField) {
-        let allFields = MortgageField.allCases
-        if let currentIndex = allFields.firstIndex(of: currentField) {
-            let nextIndex = currentIndex + 1
-            if nextIndex < allFields.count {
-                focusedField = allFields[nextIndex]
-            } else {
-                focusedField = nil
-            }
+    private func fillDemoDataAndCalculate() {
+        homePrice = "400000"
+        downPayment = "80000"
+        interestRate = "6.5"
+        loanTerm = "30"
+        propertyTax = "5000"
+        homeInsurance = "1200"
+        hoa = "200"
+        pmi = "200"
+        
+        calculateAmortization()
+        withAnimation {
+            showResults = true
+        }
+    }
+    
+    private func clearAllData() {
+        homePrice = ""
+        downPayment = ""
+        interestRate = ""
+        loanTerm = ""
+        propertyTax = ""
+        homeInsurance = ""
+        hoa = ""
+        pmi = ""
+        
+        withAnimation {
+            showResults = false
+        }
+        amortizationSchedule = []
+    }
+    
+    private func shareResults() {
+        let shareText = """
+        Mortgage Calculation Results:
+        Home Price: $\(homePrice)
+        Down Payment: $\(downPayment) (\(NumberFormatter.formatPercent(downPaymentPercentage)))
+        Monthly Payment: \(NumberFormatter.formatCurrency(totalMonthlyPayment))
+        Total Interest: \(NumberFormatter.formatCurrency(totalInterest))
+        """
+        
+        let activityVC = UIActivityViewController(
+            activityItems: [shareText],
+            applicationActivities: nil
+        )
+        
+        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+           let window = windowScene.windows.first {
+            window.rootViewController?.present(activityVC, animated: true)
         }
     }
 }
@@ -533,7 +440,7 @@ struct PaymentBreakdownChart: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            ForEach(paymentComponents, id: \\.label) { component in
+            ForEach(paymentComponents, id: \.label) { component in
                 HStack {
                     RoundedRectangle(cornerRadius: 4)
                         .fill(component.color)
@@ -590,7 +497,7 @@ struct PaymentBreakdownChart: View {
 }
 
 struct MortgageInfoSheet: View {
-    @Environment(\\.dismiss) private var dismiss
+    @Environment(\.dismiss) private var dismiss
     
     var body: some View {
         NavigationView {
@@ -608,21 +515,21 @@ struct MortgageInfoSheet: View {
                         
                         InfoSection(
                             title: "Key Terms",
-                            content: \"\"\"
+                            content: """
                             • Principal & Interest: Core loan payment
                             • PMI: Required if down payment < 20%
                             • Property Tax: Annual tax ÷ 12 months
                             • HOA: Homeowners Association fees
-                            \"\"\"
+                            """
                         )
                         
                         InfoSection(
                             title: "Tips",
-                            content: \"\"\"
+                            content: """
                             • Aim for 20% down payment to avoid PMI
                             • Total housing costs should be ≤ 28% of income
                             • Consider all costs: maintenance, utilities, etc.
-                            \"\"\"
+                            """
                         )
                     }
                     
@@ -631,42 +538,6 @@ struct MortgageInfoSheet: View {
                 .padding()
             }
             .navigationTitle("Mortgage Help")
-            .navigationBarTitleDisplayMode(.inline)
-            .navigationBarItems(trailing: Button("Done") { dismiss() })
-        }
-    }
-}
-
-struct ComparisonSheet: View {
-    let calculations: [MortgageCalculatorView.SavedCalculation]
-    @Environment(\\.dismiss) private var dismiss
-    
-    var body: some View {
-        NavigationView {
-            List {
-                ForEach(calculations) { calculation in
-                    VStack(alignment: .leading, spacing: 8) {
-                        HStack {
-                            Text("$\\(calculation.homePrice)")
-                                .font(.headline)
-                            Spacer()
-                            Text("\\(NumberFormatter.formatCurrency(calculation.monthlyPayment))/month")
-                                .font(.subheadline)
-                                .foregroundColor(.blue)
-                        }
-                        
-                        Text("Down: $\\(calculation.downPayment) • Rate: \\(calculation.interestRate)% • Term: \\(calculation.loanTerm)y")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                        
-                        Text("Total Interest: \\(NumberFormatter.formatCurrency(calculation.totalInterest))")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                    }
-                    .padding(.vertical, 4)
-                }
-            }
-            .navigationTitle("Saved Calculations")
             .navigationBarTitleDisplayMode(.inline)
             .navigationBarItems(trailing: Button("Done") { dismiss() })
         }
