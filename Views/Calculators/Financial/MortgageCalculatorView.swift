@@ -14,6 +14,11 @@ struct MortgageCalculatorView: View {
     @State private var showResults = false
     @State private var amortizationSchedule: [AmortizationItem] = []
     @State private var showInfo = false
+    @FocusState private var focusedField: MortgageField?
+    
+    enum MortgageField: CaseIterable {
+        case homePrice, downPayment, interestRate, loanTerm, propertyTax, homeInsurance, hoa, pmi
+    }
     
     struct AmortizationItem: Identifiable {
         let id = UUID()
@@ -103,8 +108,11 @@ struct MortgageCalculatorView: View {
                         icon: "house.circle.fill",
                         color: .green,
                         keyboardType: .decimalPad,
-                        helpText: "Total purchase price of the home"
+                        helpText: "Total purchase price of the home",
+                        onNext: { focusNextField(.homePrice) },
+                        onDone: { focusedField = nil }
                     )
+                    .focused($focusedField, equals: .homePrice)
                     
                     VStack(spacing: 16) {
                         ModernInputField(
@@ -115,8 +123,11 @@ struct MortgageCalculatorView: View {
                             icon: "banknote.fill",
                             color: .blue,
                             keyboardType: .decimalPad,
-                            helpText: "Amount paid upfront (typically 10-20%)"
+                            helpText: "Amount paid upfront (typically 10-20%)",
+                            onNext: { focusNextField(.downPayment) },
+                            onDone: { focusedField = nil }
                         )
+                        .focused($focusedField, equals: .downPayment)
                         
                         if !downPayment.isEmpty && !homePrice.isEmpty {
                             HStack {
@@ -142,8 +153,11 @@ struct MortgageCalculatorView: View {
                             placeholder: "6.5",
                             suffix: "%",
                             color: .orange,
-                            keyboardType: .decimalPad
+                            keyboardType: .decimalPad,
+                            onNext: { focusNextField(.interestRate) },
+                            onDone: { focusedField = nil }
                         )
+                        .focused($focusedField, equals: .interestRate)
                         
                         CompactInputField(
                             title: "Loan Term",
@@ -151,8 +165,11 @@ struct MortgageCalculatorView: View {
                             placeholder: "30",
                             suffix: "years",
                             color: .purple,
-                            keyboardType: .decimalPad
+                            keyboardType: .decimalPad,
+                            onNext: { focusNextField(.loanTerm) },
+                            onDone: { focusedField = nil }
                         )
+                        .focused($focusedField, equals: .loanTerm)
                     }
                 }
                 
@@ -169,8 +186,11 @@ struct MortgageCalculatorView: View {
                             placeholder: "5,000",
                             prefix: "$",
                             color: .red,
-                            keyboardType: .decimalPad
+                            keyboardType: .decimalPad,
+                            onNext: { focusNextField(.propertyTax) },
+                            onDone: { focusedField = nil }
                         )
+                        .focused($focusedField, equals: .propertyTax)
                         
                         CompactInputField(
                             title: "Home Insurance",
@@ -178,8 +198,11 @@ struct MortgageCalculatorView: View {
                             placeholder: "1,200",
                             prefix: "$",
                             color: .green,
-                            keyboardType: .decimalPad
+                            keyboardType: .decimalPad,
+                            onNext: { focusNextField(.homeInsurance) },
+                            onDone: { focusedField = nil }
                         )
+                        .focused($focusedField, equals: .homeInsurance)
                     }
                     
                     HStack(spacing: 16) {
@@ -189,8 +212,11 @@ struct MortgageCalculatorView: View {
                             placeholder: "200",
                             prefix: "$",
                             color: .purple,
-                            keyboardType: .decimalPad
+                            keyboardType: .decimalPad,
+                            onNext: { focusNextField(.hoa) },
+                            onDone: { focusedField = nil }
                         )
+                        .focused($focusedField, equals: .hoa)
                         
                         if downPaymentPercentage < 20 {
                             CompactInputField(
@@ -199,8 +225,12 @@ struct MortgageCalculatorView: View {
                                 placeholder: "200",
                                 prefix: "$",
                                 color: .orange,
-                                keyboardType: .decimalPad
+                                keyboardType: .decimalPad,
+                                onNext: { focusedField = nil },
+                                onDone: { focusedField = nil },
+                                showNextButton: false
                             )
+                            .focused($focusedField, equals: .pmi)
                         } else {
                             VStack(alignment: .leading, spacing: 8) {
                                 Text("PMI")
@@ -352,6 +382,18 @@ struct MortgageCalculatorView: View {
         }
         
         amortizationSchedule = schedule
+    }
+    
+    private func focusNextField(_ currentField: MortgageField) {
+        let allFields = MortgageField.allCases
+        if let currentIndex = allFields.firstIndex(of: currentField) {
+            let nextIndex = currentIndex + 1
+            if nextIndex < allFields.count {
+                focusedField = allFields[nextIndex]
+            } else {
+                focusedField = nil
+            }
+        }
     }
     
     private func fillDemoDataAndCalculate() {

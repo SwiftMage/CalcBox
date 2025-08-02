@@ -1,4 +1,112 @@
 import SwiftUI
+import UIKit
+
+// MARK: - Keyboard Toolbar TextField
+
+struct KeyboardToolbarTextField: UIViewRepresentable {
+    @Binding var text: String
+    let placeholder: String
+    var onNext: (() -> Void)?
+    var onDone: (() -> Void)?
+    var showNextButton: Bool = true
+    
+    func makeUIView(context: Context) -> UITextField {
+        let textField = UITextField()
+        textField.placeholder = placeholder
+        textField.keyboardType = .decimalPad
+        textField.font = UIFont.preferredFont(forTextStyle: .title2)
+        textField.delegate = context.coordinator
+        textField.setContentHuggingPriority(.defaultHigh, for: .vertical)
+        textField.setContentCompressionResistancePriority(.required, for: .vertical)
+        
+        // Create toolbar
+        let toolbar = UIToolbar()
+        toolbar.sizeToFit()
+        
+        var items: [UIBarButtonItem] = []
+        
+        if showNextButton {
+            let nextButton = UIBarButtonItem(title: "Next", style: .plain, target: context.coordinator, action: #selector(Coordinator.nextPressed))
+            items.append(nextButton)
+        }
+        
+        let flexSpace = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
+        items.append(flexSpace)
+        
+        let doneButton = UIBarButtonItem(title: "Done", style: .done, target: context.coordinator, action: #selector(Coordinator.donePressed))
+        items.append(doneButton)
+        
+        toolbar.items = items
+        textField.inputAccessoryView = toolbar
+        
+        // Store references for coordinator
+        context.coordinator.textField = textField
+        context.coordinator.onNext = onNext
+        context.coordinator.onDone = onDone
+        
+        return textField
+    }
+    
+    func updateUIView(_ uiView: UITextField, context: Context) {
+        if uiView.text != text {
+            uiView.text = text
+        }
+        context.coordinator.onNext = onNext
+        context.coordinator.onDone = onDone
+    }
+    
+    func makeCoordinator() -> Coordinator {
+        Coordinator(self)
+    }
+    
+    class Coordinator: NSObject, UITextFieldDelegate {
+        let parent: KeyboardToolbarTextField
+        var textField: UITextField?
+        var onNext: (() -> Void)?
+        var onDone: (() -> Void)?
+        
+        init(_ parent: KeyboardToolbarTextField) {
+            self.parent = parent
+        }
+        
+        func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
+            let currentText = textField.text ?? ""
+            let newText = (currentText as NSString).replacingCharacters(in: range, with: string)
+            
+            // Allow empty string
+            if newText.isEmpty {
+                parent.text = newText
+                return true
+            }
+            
+            // Validate decimal input
+            let allowedCharacters = CharacterSet(charactersIn: "0123456789.")
+            let characterSet = CharacterSet(charactersIn: string)
+            
+            if !allowedCharacters.isSuperset(of: characterSet) {
+                return false
+            }
+            
+            // Allow only one decimal point
+            let decimalCount = newText.components(separatedBy: ".").count - 1
+            if decimalCount > 1 {
+                return false
+            }
+            
+            parent.text = newText
+            return true
+        }
+        
+        @objc func nextPressed() {
+            onNext?()
+        }
+        
+        @objc func donePressed() {
+            textField?.resignFirstResponder()
+            onDone?()
+        }
+    }
+}
 
 // MARK: - Enhanced Input Field Components
 
@@ -12,6 +120,9 @@ struct ModernInputField: View {
     let color: Color
     let keyboardType: UIKeyboardType
     let helpText: String?
+    var onNext: (() -> Void)?
+    var onDone: (() -> Void)?
+    var showNextButton: Bool = true
     
     private var fieldId: String {
         "input-\(title.replacingOccurrences(of: " ", with: "-").lowercased())"
@@ -26,7 +137,10 @@ struct ModernInputField: View {
         icon: String,
         color: Color = .blue,
         keyboardType: UIKeyboardType = .decimalPad,
-        helpText: String? = nil
+        helpText: String? = nil,
+        onNext: (() -> Void)? = nil,
+        onDone: (() -> Void)? = nil,
+        showNextButton: Bool = true
     ) {
         self.title = title
         self._value = value
@@ -37,6 +151,9 @@ struct ModernInputField: View {
         self.color = color
         self.keyboardType = keyboardType
         self.helpText = helpText
+        self.onNext = onNext
+        self.onDone = onDone
+        self.showNextButton = showNextButton
     }
     
     var body: some View {
@@ -66,12 +183,22 @@ struct ModernInputField: View {
                         .frame(minWidth: 20)
                 }
                 
-                TextField(placeholder, text: $value)
-                    .keyboardType(keyboardType)
-                    .font(.title2)
-                    .fontWeight(.medium)
-                    .textFieldStyle(PlainTextFieldStyle())
-                    .multilineTextAlignment(.leading)
+                if keyboardType == .decimalPad && (onNext != nil || onDone != nil) {
+                    KeyboardToolbarTextField(
+                        text: $value,
+                        placeholder: placeholder,
+                        onNext: onNext,
+                        onDone: onDone,
+                        showNextButton: showNextButton
+                    )
+                } else {
+                    TextField(placeholder, text: $value)
+                        .keyboardType(keyboardType)
+                        .font(.title2)
+                        .fontWeight(.medium)
+                        .textFieldStyle(PlainTextFieldStyle())
+                        .multilineTextAlignment(.leading)
+                }
                 
                 if let suffix = suffix {
                     Text(suffix)
@@ -106,6 +233,9 @@ struct CompactInputField: View {
     let suffix: String?
     let color: Color
     let keyboardType: UIKeyboardType
+    var onNext: (() -> Void)?
+    var onDone: (() -> Void)?
+    var showNextButton: Bool = true
     
     private var fieldId: String {
         "input-\(title.replacingOccurrences(of: " ", with: "-").lowercased())"
@@ -118,7 +248,10 @@ struct CompactInputField: View {
         prefix: String? = nil,
         suffix: String? = nil,
         color: Color = .blue,
-        keyboardType: UIKeyboardType = .decimalPad
+        keyboardType: UIKeyboardType = .decimalPad,
+        onNext: (() -> Void)? = nil,
+        onDone: (() -> Void)? = nil,
+        showNextButton: Bool = true
     ) {
         self.title = title
         self._value = value
@@ -127,6 +260,9 @@ struct CompactInputField: View {
         self.suffix = suffix
         self.color = color
         self.keyboardType = keyboardType
+        self.onNext = onNext
+        self.onDone = onDone
+        self.showNextButton = showNextButton
     }
     
     var body: some View {
@@ -146,11 +282,21 @@ struct CompactInputField: View {
                         .foregroundColor(color)
                 }
                 
-                TextField(placeholder, text: $value)
-                    .keyboardType(keyboardType)
-                    .font(.headline)
-                    .fontWeight(.medium)
-                    .textFieldStyle(PlainTextFieldStyle())
+                if keyboardType == .decimalPad && (onNext != nil || onDone != nil) {
+                    KeyboardToolbarTextField(
+                        text: $value,
+                        placeholder: placeholder,
+                        onNext: onNext,
+                        onDone: onDone,
+                        showNextButton: showNextButton
+                    )
+                } else {
+                    TextField(placeholder, text: $value)
+                        .keyboardType(keyboardType)
+                        .font(.headline)
+                        .fontWeight(.medium)
+                        .textFieldStyle(PlainTextFieldStyle())
+                }
                 
                 if let suffix = suffix {
                     Text(suffix)
