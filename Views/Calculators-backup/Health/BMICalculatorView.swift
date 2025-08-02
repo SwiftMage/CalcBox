@@ -9,8 +9,6 @@ struct BMICalculatorView: View {
     @State private var showResults = false
     @State private var age = ""
     @State private var gender = Gender.male
-    @State private var isDemoActive = false
-    @State private var showInfo = false
     
     enum UnitSystem: String, CaseIterable {
         case imperial = "Imperial"
@@ -101,114 +99,100 @@ struct BMICalculatorView: View {
         }
     }
     
-    var allFieldsEmpty: Bool {
-        return weight.isEmpty && heightFeet.isEmpty && heightInches.isEmpty && heightCm.isEmpty && age.isEmpty
-    }
-    
     var body: some View {
         CalculatorView(
             title: "Body Mass Index",
             description: "Calculate BMI and assess health risks"
         ) {
-            VStack(spacing: 20) {
-                // Quick Action Buttons
-                HStack(spacing: 8) {
-                    QuickActionButton(
-                        icon: "wand.and.stars.inverse",
-                        title: "Example",
-                        color: .blue
-                    ) {
-                        fillDemoDataAndCalculate()
-                    }
-                    
-                    QuickActionButton(
-                        icon: "trash",
-                        title: "Clear",
-                        color: .red
-                    ) {
-                        clearAllData()
-                    }
-                    
-                    QuickActionButton(
-                        icon: "info.circle",
-                        title: "Info",
-                        color: .gray
-                    ) {
-                        showInfo = true
-                    }
-                    
-                    if showResults {
-                        QuickActionButton(
-                            icon: "square.and.arrow.up",
-                            title: "Share",
-                            color: .green
-                        ) {
-                            shareResults()
-                        }
-                    }
-                }
-                
+            VStack(spacing: 24) {
                 // Unit System Selection
-                SegmentedPicker(
+                SegmentedInputField(
                     title: "Unit System",
                     selection: $unitSystem,
-                    options: UnitSystem.allCases.map { ($0, $0.rawValue) }
+                    options: UnitSystem.allCases.map { ($0, $0.rawValue) },
+                    icon: "ruler.fill",
+                    color: .blue
                 )
                 
-                // Input Fields
-                VStack(spacing: 16) {
+                // Main Measurements
+                GroupedInputFields(
+                    title: "Body Measurements",
+                    icon: "figure.stand",
+                    color: .red
+                ) {
                     if unitSystem == .imperial {
-                        CalculatorInputField(
+                        ModernInputField(
                             title: "Weight",
                             value: $weight,
-                            placeholder: "165",
-                            suffix: "lbs"
+                            placeholder: "150",
+                            suffix: "lbs",
+                            icon: "scalemass.fill",
+                            color: .red,
+                            helpText: "Your current body weight in pounds"
                         )
                         
                         HStack(spacing: 16) {
-                            CalculatorInputField(
+                            CompactInputField(
                                 title: "Height (Feet)",
                                 value: $heightFeet,
                                 placeholder: "5",
-                                suffix: "ft"
+                                suffix: "ft",
+                                color: .blue
                             )
                             
-                            CalculatorInputField(
+                            CompactInputField(
                                 title: "Height (Inches)",
                                 value: $heightInches,
-                                placeholder: "9",
-                                suffix: "in"
+                                placeholder: "10",
+                                suffix: "in",
+                                color: .blue
                             )
                         }
                     } else {
-                        CalculatorInputField(
+                        ModernInputField(
                             title: "Weight",
                             value: $weight,
-                            placeholder: "75",
-                            suffix: "kg"
+                            placeholder: "70",
+                            suffix: "kg",
+                            icon: "scalemass.fill",
+                            color: .red,
+                            helpText: "Your current body weight in kilograms"
                         )
                         
-                        CalculatorInputField(
+                        ModernInputField(
                             title: "Height",
                             value: $heightCm,
                             placeholder: "175",
-                            suffix: "cm"
+                            suffix: "cm",
+                            icon: "ruler.fill",
+                            color: .blue,
+                            helpText: "Your height in centimeters"
                         )
                     }
-                    
-                    // Optional fields
+                }
+                
+                // Optional Information
+                GroupedInputFields(
+                    title: "Additional Information (Optional)",
+                    icon: "person.fill",
+                    color: .purple
+                ) {
                     HStack(spacing: 16) {
-                        CalculatorInputField(
-                            title: "Age (optional)",
+                        CompactInputField(
+                            title: "Age",
                             value: $age,
                             placeholder: "30",
-                            suffix: "years"
+                            suffix: "years",
+                            color: .purple
                         )
                         
                         VStack(alignment: .leading, spacing: 8) {
-                            Text("Gender (optional)")
-                                .font(.subheadline)
+                            Text("Gender")
+                                .font(.caption)
+                                .fontWeight(.medium)
                                 .foregroundColor(.secondary)
+                                .textCase(.uppercase)
+                                .tracking(0.5)
                             
                             Picker("Gender", selection: $gender) {
                                 ForEach(Gender.allCases, id: \.self) { gender in
@@ -217,7 +201,8 @@ struct BMICalculatorView: View {
                             }
                             .pickerStyle(MenuPickerStyle())
                             .frame(maxWidth: .infinity)
-                            .padding()
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 12)
                             .background(Color(.systemGray6))
                             .clipShape(RoundedRectangle(cornerRadius: 12))
                         }
@@ -235,6 +220,7 @@ struct BMICalculatorView: View {
                 if showResults && bmi > 0 {
                     VStack(spacing: 20) {
                         Divider()
+                            .id("results")
                         
                         Text("Your BMI Results")
                             .font(.title2)
@@ -304,69 +290,6 @@ struct BMICalculatorView: View {
                     .transition(.move(edge: .bottom).combined(with: .opacity))
                 }
             }
-        }
-        .sheet(isPresented: $showInfo) {
-            BMIInfoSheet()
-        }
-    }
-    
-    private func fillDemoData() {
-        if unitSystem == .imperial {
-            weight = "165"
-            heightFeet = "5"
-            heightInches = "9"
-        } else {
-            weight = "75"
-            heightCm = "175"
-        }
-        age = "30"
-        gender = .male
-        isDemoActive = true
-    }
-    
-    private func fillDemoDataAndCalculate() {
-        fillDemoData()
-        withAnimation {
-            showResults = true
-        }
-    }
-    
-    private func clearAllData() {
-        clearDemoData()
-    }
-    
-    private func clearDemoData() {
-        weight = ""
-        heightFeet = ""
-        heightInches = ""
-        heightCm = ""
-        age = ""
-        gender = .male
-        unitSystem = .imperial
-        isDemoActive = false
-        
-        withAnimation {
-            showResults = false
-        }
-    }
-    
-    private func shareResults() {
-        let shareText = """
-        BMI Calculation Results:
-        BMI: \(String(format: "%.1f", bmi))
-        Category: \(bmiCategory.name)
-        Weight: \(weight) \(unitSystem == .imperial ? "lbs" : "kg")
-        Height: \(unitSystem == .imperial ? "\(heightFeet)'\(heightInches)\"" : "\(heightCm) cm")
-        """
-        
-        let activityVC = UIActivityViewController(
-            activityItems: [shareText],
-            applicationActivities: nil
-        )
-        
-        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-           let window = windowScene.windows.first {
-            window.rootViewController?.present(activityVC, animated: true)
         }
     }
 }
@@ -556,55 +479,6 @@ struct RecommendationsView: View {
         .padding()
         .background(Color(.systemGreen).opacity(0.1))
         .clipShape(RoundedRectangle(cornerRadius: 12))
-    }
-}
-
-struct BMIInfoSheet: View {
-    @Environment(\.dismiss) private var dismiss
-    
-    var body: some View {
-        NavigationView {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 20) {
-                    Text("About BMI Calculator")
-                        .font(.title)
-                        .fontWeight(.bold)
-                    
-                    VStack(alignment: .leading, spacing: 16) {
-                        InfoSection(
-                            title: "What is BMI?",
-                            content: "Body Mass Index (BMI) is a measure of body fat based on height and weight. It provides a general assessment of whether someone is underweight, normal weight, overweight, or obese."
-                        )
-                        
-                        InfoSection(
-                            title: "BMI Categories",
-                            content: """
-                            • Underweight: BMI < 18.5
-                            • Normal weight: BMI 18.5-24.9
-                            • Overweight: BMI 25-29.9
-                            • Obese: BMI ≥ 30
-                            """
-                        )
-                        
-                        InfoSection(
-                            title: "Limitations",
-                            content: """
-                            • Doesn't distinguish between muscle and fat
-                            • May not be accurate for athletes or elderly
-                            • Doesn't account for body composition
-                            • Always consult healthcare providers for personalized advice
-                            """
-                        )
-                    }
-                    
-                    Spacer()
-                }
-                .padding()
-            }
-            .navigationTitle("BMI Help")
-            .navigationBarTitleDisplayMode(.inline)
-            .navigationBarItems(trailing: Button("Done") { dismiss() })
-        }
     }
 }
 

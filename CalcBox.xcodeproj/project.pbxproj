@@ -7,21 +7,18 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		DD4E4D1A2E3955C1003CDCA5 /* BMICalculatorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD4E4D0C2E3955C1003CDCA5 /* BMICalculatorView.swift */; };
-		DD4E4D1B2E3955C1003CDCA5 /* MortgageCalculatorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD4E4D0A2E3955C1003CDCA5 /* MortgageCalculatorView.swift */; };
 		DD4E4D1C2E3955C1003CDCA5 /* CalculatorCategory.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD4E4D012E3955C1003CDCA5 /* CalculatorCategory.swift */; };
-		DD4E4D1D2E3955C1003CDCA5 /* ApplianceEnergyCostView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD4E4D112E3955C1003CDCA5 /* ApplianceEnergyCostView.swift */; };
-		DD4E4D1E2E3955C1003CDCA5 /* CompoundInterestView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD4E4D092E3955C1003CDCA5 /* CompoundInterestView.swift */; };
 		DD4E4D1F2E3955C1003CDCA5 /* PlaceholderViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD4E4D182E3955C1003CDCA5 /* PlaceholderViews.swift */; };
 		DD4E4D202E3955C1003CDCA5 /* Calculator.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD4E4D002E3955C1003CDCA5 /* Calculator.swift */; };
 		DD4E4D212E3955C1003CDCA5 /* CalculatorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD4E4D152E3955C1003CDCA5 /* CalculatorView.swift */; };
-		DD4E4D222E3955C1003CDCA5 /* DriveToWorkView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD4E4D0E2E3955C1003CDCA5 /* DriveToWorkView.swift */; };
-		DD4E4D232E3955C1003CDCA5 /* EVChargingCostView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD4E4D0F2E3955C1003CDCA5 /* EVChargingCostView.swift */; };
 		DD4E4D242E3955C1003CDCA5 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD4E4D172E3955C1003CDCA5 /* ContentView.swift */; };
 		DD4E4D252E3955C1003CDCA5 /* CalcBoxApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD4E4CFF2E3955C1003CDCA5 /* CalcBoxApp.swift */; };
 		DD4E4D262E3955C1003CDCA5 /* CalculatorInputField.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD4E4D142E3955C1003CDCA5 /* CalculatorInputField.swift */; };
 		DD4E4D272E3955C1003CDCA5 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = DD4E4D032E3955C1003CDCA5 /* README.md */; };
 		DD4E4D282E3955C1003CDCA5 /* SETUP_INSTRUCTIONS.md in Resources */ = {isa = PBXBuildFile; fileRef = DD4E4D062E3955C1003CDCA5 /* SETUP_INSTRUCTIONS.md */; };
+		DDD66D572E3DBE1E00C6E76D /* SharedCalculatorComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDD66D562E3DBE1E00C6E76D /* SharedCalculatorComponents.swift */; };
+		DDD66D582E3DBE2000C6E76D /* DecimalPadInputField.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDD66D592E3DBE2000C6E76D /* DecimalPadInputField.swift */; };
+		DDD66D5A2E3DBE2100C6E76D /* KeyboardObserver.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDD66D5B2E3DBE2100C6E76D /* KeyboardObserver.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -31,22 +28,24 @@
 		DD4E4D012E3955C1003CDCA5 /* CalculatorCategory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalculatorCategory.swift; sourceTree = "<group>"; };
 		DD4E4D032E3955C1003CDCA5 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		DD4E4D062E3955C1003CDCA5 /* SETUP_INSTRUCTIONS.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = SETUP_INSTRUCTIONS.md; sourceTree = "<group>"; };
-		DD4E4D092E3955C1003CDCA5 /* CompoundInterestView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompoundInterestView.swift; sourceTree = "<group>"; };
-		DD4E4D0A2E3955C1003CDCA5 /* MortgageCalculatorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MortgageCalculatorView.swift; sourceTree = "<group>"; };
-		DD4E4D0C2E3955C1003CDCA5 /* BMICalculatorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BMICalculatorView.swift; sourceTree = "<group>"; };
-		DD4E4D0E2E3955C1003CDCA5 /* DriveToWorkView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DriveToWorkView.swift; sourceTree = "<group>"; };
-		DD4E4D0F2E3955C1003CDCA5 /* EVChargingCostView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EVChargingCostView.swift; sourceTree = "<group>"; };
-		DD4E4D112E3955C1003CDCA5 /* ApplianceEnergyCostView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ApplianceEnergyCostView.swift; sourceTree = "<group>"; };
 		DD4E4D142E3955C1003CDCA5 /* CalculatorInputField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalculatorInputField.swift; sourceTree = "<group>"; };
 		DD4E4D152E3955C1003CDCA5 /* CalculatorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalculatorView.swift; sourceTree = "<group>"; };
 		DD4E4D172E3955C1003CDCA5 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		DD4E4D182E3955C1003CDCA5 /* PlaceholderViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaceholderViews.swift; sourceTree = "<group>"; };
+		DDD66D562E3DBE1E00C6E76D /* SharedCalculatorComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedCalculatorComponents.swift; sourceTree = "<group>"; };
+		DDD66D592E3DBE2000C6E76D /* DecimalPadInputField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DecimalPadInputField.swift; sourceTree = "<group>"; };
+		DDD66D5B2E3DBE2100C6E76D /* KeyboardObserver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardObserver.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		DD4E4CF02E395458003CDCA5 /* CalcBox */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = CalcBox;
+			sourceTree = "<group>";
+		};
+		DDD66D4D2E3DB07500C6E76D /* Calculators */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Calculators;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -116,64 +115,14 @@
 			path = ViewModels;
 			sourceTree = "<group>";
 		};
-		DD4E4D082E3955C1003CDCA5 /* Education */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = Education;
-			sourceTree = "<group>";
-		};
-		DD4E4D0B2E3955C1003CDCA5 /* Financial */ = {
-			isa = PBXGroup;
-			children = (
-				DD4E4D092E3955C1003CDCA5 /* CompoundInterestView.swift */,
-				DD4E4D0A2E3955C1003CDCA5 /* MortgageCalculatorView.swift */,
-			);
-			path = Financial;
-			sourceTree = "<group>";
-		};
-		DD4E4D0D2E3955C1003CDCA5 /* Health */ = {
-			isa = PBXGroup;
-			children = (
-				DD4E4D0C2E3955C1003CDCA5 /* BMICalculatorView.swift */,
-			);
-			path = Health;
-			sourceTree = "<group>";
-		};
-		DD4E4D102E3955C1003CDCA5 /* Travel */ = {
-			isa = PBXGroup;
-			children = (
-				DD4E4D0E2E3955C1003CDCA5 /* DriveToWorkView.swift */,
-				DD4E4D0F2E3955C1003CDCA5 /* EVChargingCostView.swift */,
-			);
-			path = Travel;
-			sourceTree = "<group>";
-		};
-		DD4E4D122E3955C1003CDCA5 /* Utilities */ = {
-			isa = PBXGroup;
-			children = (
-				DD4E4D112E3955C1003CDCA5 /* ApplianceEnergyCostView.swift */,
-			);
-			path = Utilities;
-			sourceTree = "<group>";
-		};
-		DD4E4D132E3955C1003CDCA5 /* Calculators */ = {
-			isa = PBXGroup;
-			children = (
-				DD4E4D082E3955C1003CDCA5 /* Education */,
-				DD4E4D0B2E3955C1003CDCA5 /* Financial */,
-				DD4E4D0D2E3955C1003CDCA5 /* Health */,
-				DD4E4D102E3955C1003CDCA5 /* Travel */,
-				DD4E4D122E3955C1003CDCA5 /* Utilities */,
-			);
-			path = Calculators;
-			sourceTree = "<group>";
-		};
 		DD4E4D162E3955C1003CDCA5 /* Components */ = {
 			isa = PBXGroup;
 			children = (
 				DD4E4D142E3955C1003CDCA5 /* CalculatorInputField.swift */,
 				DD4E4D152E3955C1003CDCA5 /* CalculatorView.swift */,
+				DDD66D562E3DBE1E00C6E76D /* SharedCalculatorComponents.swift */,
+				DDD66D592E3DBE2000C6E76D /* DecimalPadInputField.swift */,
+				DDD66D5B2E3DBE2100C6E76D /* KeyboardObserver.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -181,7 +130,7 @@
 		DD4E4D192E3955C1003CDCA5 /* Views */ = {
 			isa = PBXGroup;
 			children = (
-				DD4E4D132E3955C1003CDCA5 /* Calculators */,
+				DDD66D4D2E3DB07500C6E76D /* Calculators */,
 				DD4E4D162E3955C1003CDCA5 /* Components */,
 				DD4E4D172E3955C1003CDCA5 /* ContentView.swift */,
 				DD4E4D182E3955C1003CDCA5 /* PlaceholderViews.swift */,
@@ -206,6 +155,7 @@
 			);
 			fileSystemSynchronizedGroups = (
 				DD4E4CF02E395458003CDCA5 /* CalcBox */,
+				DDD66D4D2E3DB07500C6E76D /* Calculators */,
 			);
 			name = CalcBox;
 			packageProductDependencies = (
@@ -265,19 +215,16 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				DD4E4D1A2E3955C1003CDCA5 /* BMICalculatorView.swift in Sources */,
-				DD4E4D1B2E3955C1003CDCA5 /* MortgageCalculatorView.swift in Sources */,
 				DD4E4D1C2E3955C1003CDCA5 /* CalculatorCategory.swift in Sources */,
-				DD4E4D1D2E3955C1003CDCA5 /* ApplianceEnergyCostView.swift in Sources */,
-				DD4E4D1E2E3955C1003CDCA5 /* CompoundInterestView.swift in Sources */,
+				DDD66D572E3DBE1E00C6E76D /* SharedCalculatorComponents.swift in Sources */,
 				DD4E4D1F2E3955C1003CDCA5 /* PlaceholderViews.swift in Sources */,
 				DD4E4D202E3955C1003CDCA5 /* Calculator.swift in Sources */,
 				DD4E4D212E3955C1003CDCA5 /* CalculatorView.swift in Sources */,
-				DD4E4D222E3955C1003CDCA5 /* DriveToWorkView.swift in Sources */,
-				DD4E4D232E3955C1003CDCA5 /* EVChargingCostView.swift in Sources */,
 				DD4E4D242E3955C1003CDCA5 /* ContentView.swift in Sources */,
 				DD4E4D252E3955C1003CDCA5 /* CalcBoxApp.swift in Sources */,
 				DD4E4D262E3955C1003CDCA5 /* CalculatorInputField.swift in Sources */,
+				DDD66D582E3DBE2000C6E76D /* DecimalPadInputField.swift in Sources */,
+				DDD66D5A2E3DBE2100C6E76D /* KeyboardObserver.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

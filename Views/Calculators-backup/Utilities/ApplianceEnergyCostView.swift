@@ -9,8 +9,6 @@ struct ApplianceEnergyCostView: View {
     @State private var selectedAppliance: Appliance? = nil
     @State private var showAppliancePicker = false
     @State private var showResults = false
-    @State private var isDemoActive = false
-    @State private var showInfo = false
     
     struct Appliance: Identifiable {
         let id = UUID()
@@ -104,108 +102,111 @@ struct ApplianceEnergyCostView: View {
             title: "Appliance Energy Cost",
             description: "Calculate electricity costs for any appliance"
         ) {
-            VStack(spacing: 20) {
-                // Quick Action Buttons
-                HStack(spacing: 8) {
-                    QuickActionButton(
-                        icon: "wand.and.stars.inverse",
-                        title: "Example",
-                        color: .blue
-                    ) {
-                        fillDemoDataAndCalculate()
-                    }
-                    
-                    QuickActionButton(
-                        icon: "trash",
-                        title: "Clear",
-                        color: .red
-                    ) {
-                        clearAllData()
-                    }
-                    
-                    QuickActionButton(
-                        icon: "info.circle",
-                        title: "Info",
-                        color: .gray
-                    ) {
-                        showInfo = true
-                    }
-                    
-                    if showResults {
-                        QuickActionButton(
-                            icon: "square.and.arrow.up",
-                            title: "Share",
-                            color: .green
-                        ) {
-                            shareResults()
-                        }
-                    }
-                }
-                
+            VStack(spacing: 24) {
                 // Appliance Selection
-                VStack(alignment: .leading, spacing: 12) {
-                    Text("Select Appliance")
-                        .font(.headline)
-                    
+                GroupedInputFields(
+                    title: "Appliance Selection",
+                    icon: "house.fill",
+                    color: .orange
+                ) {
                     Button(action: { showAppliancePicker = true }) {
-                        HStack {
+                        HStack(spacing: 12) {
                             Image(systemName: selectedAppliance?.icon ?? "plug.fill")
                                 .foregroundColor(.orange)
-                            Text(selectedAppliance?.name ?? "Choose from common appliances")
-                                .foregroundColor(selectedAppliance != nil ? .primary : .secondary)
+                                .font(.title2)
+                                .frame(width: 24)
+                            
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text(selectedAppliance?.name ?? "Choose Common Appliance")
+                                    .font(.headline)
+                                    .foregroundColor(selectedAppliance != nil ? .primary : .secondary)
+                                
+                                if let appliance = selectedAppliance {
+                                    Text("\(appliance.typicalWattage)W")
+                                        .font(.caption)
+                                        .foregroundColor(.secondary)
+                                }
+                            }
+                            
                             Spacer()
+                            
                             Image(systemName: "chevron.down")
                                 .foregroundColor(.secondary)
+                                .font(.caption)
                         }
-                        .padding()
-                        .background(Color(.systemGray6))
-                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                        .padding(.horizontal, 20)
+                        .padding(.vertical, 16)
+                        .background(Color(.systemBackground))
+                        .clipShape(RoundedRectangle(cornerRadius: 16))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 16)
+                                .stroke(Color(.systemGray4), lineWidth: 1)
+                        )
                     }
                 }
                 
-                // Manual Input
-                VStack(alignment: .leading, spacing: 16) {
-                    Text("Appliance Details")
-                        .font(.headline)
-                    
-                    CalculatorInputField(
-                        title: "Power Consumption",
-                        value: $wattage,
-                        placeholder: "100",
-                        suffix: "watts"
-                    )
-                    
-                    CalculatorInputField(
-                        title: "Daily Usage",
-                        value: $hoursPerDay,
-                        placeholder: "8",
-                        suffix: "hours/day"
-                    )
-                    
-                    // Standby Power Toggle
-                    Toggle(isOn: $includeStandby) {
-                        HStack {
-                            Image(systemName: "moon.fill")
-                                .foregroundColor(.purple)
-                            Text("Include Standby Power")
-                        }
-                    }
-                    .tint(.purple)
-                    
-                    if includeStandby {
-                        CalculatorInputField(
-                            title: "Standby Power",
-                            value: $standbyWattage,
-                            placeholder: "5",
-                            suffix: "watts"
+                // Power Settings
+                GroupedInputFields(
+                    title: "Power Settings",
+                    icon: "bolt.fill",
+                    color: .yellow
+                ) {
+                    HStack(spacing: 16) {
+                        CompactInputField(
+                            title: "Power Consumption",
+                            value: $wattage,
+                            placeholder: "100",
+                            suffix: "watts",
+                            color: .yellow
+                        )
+                        
+                        CompactInputField(
+                            title: "Daily Usage",
+                            value: $hoursPerDay,
+                            placeholder: "8",
+                            suffix: "hours",
+                            color: .blue
                         )
                     }
                     
-                    CalculatorInputField(
+                    // Standby Power Toggle
+                    ToggleInputField(
+                        title: "Include Standby Power",
+                        subtitle: "Power used when appliance is plugged in but not active",
+                        isOn: $includeStandby,
+                        icon: "moon.fill",
+                        color: .purple
+                    )
+                    
+                    if includeStandby {
+                        ModernInputField(
+                            title: "Standby Power",
+                            value: $standbyWattage,
+                            placeholder: "5",
+                            suffix: "watts",
+                            icon: "moon.circle.fill",
+                            color: .purple,
+                            helpText: "Power consumed when appliance is off but plugged in"
+                        )
+                        .transition(.move(edge: .top).combined(with: .opacity))
+                    }
+                }
+                
+                // Electricity Rate
+                GroupedInputFields(
+                    title: "Electricity Cost",
+                    icon: "dollarsign.circle.fill",
+                    color: .green
+                ) {
+                    ModernInputField(
                         title: "Electricity Rate",
                         value: $electricityRate,
                         placeholder: "0.13",
-                        suffix: "$/kWh"
+                        prefix: "$",
+                        suffix: "/kWh",
+                        icon: "dollarsign.circle.fill",
+                        color: .green,
+                        helpText: "Your local electricity rate per kilowatt-hour"
                     )
                 }
                 
@@ -220,6 +221,7 @@ struct ApplianceEnergyCostView: View {
                 if showResults {
                     VStack(spacing: 20) {
                         Divider()
+                            .id("results")
                         
                         Text("Energy Cost Analysis")
                             .font(.title2)
@@ -294,68 +296,6 @@ struct ApplianceEnergyCostView: View {
                     showAppliancePicker = false
                 }
             )
-        }
-        .sheet(isPresented: $showInfo) {
-            ApplianceInfoSheet()
-        }
-    }
-    
-    private func fillDemoData() {
-        // Use the refrigerator as demo appliance
-        let refrigerator = commonAppliances.first { $0.name == "Refrigerator" }
-        selectedAppliance = refrigerator
-        wattage = "150"
-        hoursPerDay = "24"
-        electricityRate = "0.13"
-        standbyWattage = "5"
-        includeStandby = true
-        isDemoActive = true
-    }
-    
-    private func fillDemoDataAndCalculate() {
-        fillDemoData()
-        withAnimation {
-            showResults = true
-        }
-    }
-    
-    private func clearAllData() {
-        clearDemoData()
-    }
-    
-    private func clearDemoData() {
-        selectedAppliance = nil
-        wattage = ""
-        hoursPerDay = ""
-        electricityRate = ""
-        standbyWattage = ""
-        includeStandby = false
-        isDemoActive = false
-        
-        withAnimation {
-            showResults = false
-        }
-    }
-    
-    private func shareResults() {
-        let shareText = """
-        Appliance Energy Cost Results:
-        Appliance: \(selectedAppliance?.name ?? "Appliance")
-        Power: \(wattage)W
-        Usage: \(hoursPerDay) hours/day
-        Daily Cost: \(NumberFormatter.formatCurrency(dailyCost))
-        Monthly Cost: \(NumberFormatter.formatCurrency(monthlyCost))
-        Yearly Cost: \(NumberFormatter.formatCurrency(yearlyCost))
-        """
-        
-        let activityVC = UIActivityViewController(
-            activityItems: [shareText],
-            applicationActivities: nil
-        )
-        
-        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-           let window = windowScene.windows.first {
-            window.rootViewController?.present(activityVC, animated: true)
         }
     }
 }
@@ -582,64 +522,6 @@ struct AppliancePickerView: View {
             .navigationBarItems(trailing: Button("Cancel") {
                 onSelect(selectedAppliance ?? appliances[0])
             })
-        }
-    }
-}
-
-struct ApplianceInfoSheet: View {
-    @Environment(\.dismiss) private var dismiss
-    
-    var body: some View {
-        NavigationView {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 20) {
-                    Text("About Appliance Energy Cost Calculator")
-                        .font(.title)
-                        .fontWeight(.bold)
-                    
-                    VStack(alignment: .leading, spacing: 16) {
-                        InfoSection(
-                            title: "How it works",
-                            content: "This calculator estimates electricity costs based on appliance wattage, daily usage hours, and your local electricity rate ($/kWh)."
-                        )
-                        
-                        InfoSection(
-                            title: "Energy Cost Formula",
-                            content: """
-                            Daily Cost = (Watts ÷ 1000) × Hours × Rate
-                            Monthly Cost = Daily Cost × 30
-                            Yearly Cost = Daily Cost × 365
-                            """
-                        )
-                        
-                        InfoSection(
-                            title: "Standby Power",
-                            content: """
-                            Many appliances consume power even when not actively in use:
-                            • TVs, game consoles, microwaves
-                            • Coffee makers, printers, computers
-                            • Can add $100+ to annual electricity bills
-                            """
-                        )
-                        
-                        InfoSection(
-                            title: "Energy Saving Tips",
-                            content: """
-                            • Unplug devices when not in use
-                            • Use power strips with switches
-                            • Choose ENERGY STAR certified appliances
-                            • Adjust usage patterns to off-peak hours
-                            """
-                        )
-                    }
-                    
-                    Spacer()
-                }
-                .padding()
-            }
-            .navigationTitle("Energy Cost Help")
-            .navigationBarTitleDisplayMode(.inline)
-            .navigationBarItems(trailing: Button("Done") { dismiss() })
         }
     }
 }

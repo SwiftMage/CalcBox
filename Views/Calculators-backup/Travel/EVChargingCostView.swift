@@ -14,7 +14,6 @@ struct EVChargingCostView: View {
     @State private var showResults = false
     @State private var selectedEV: EVModel? = nil
     @State private var showEVPicker = false
-    @State private var isDemoActive = false
     
     enum ChargeLevel: String, CaseIterable {
         case home = "Home (Level 2)"
@@ -216,20 +215,10 @@ struct EVChargingCostView: View {
                     }
                 }
                 
-                // Action Buttons
-                HStack(spacing: 12) {
-                    CalculatorButton(title: isDemoActive ? "Clear Demo" : "Try Demo", style: .secondary) {
-                        if isDemoActive {
-                            clearDemoData()
-                        } else {
-                            fillDemoData()
-                        }
-                    }
-                    
-                    CalculatorButton(title: "Calculate Charging Costs") {
-                        withAnimation {
-                            showResults = true
-                        }
+                // Calculate Button
+                CalculatorButton(title: "Calculate Charging Costs") {
+                    withAnimation {
+                        showResults = true
                     }
                 }
                 
@@ -333,40 +322,6 @@ struct EVChargingCostView: View {
                     showEVPicker = false
                 }
             )
-        }
-    }
-    
-    private func fillDemoData() {
-        batteryCapacity = "75"
-        dailyMiles = "40"
-        vehicleEfficiency = "3.5"
-        electricityRate = "0.13"
-        chargeLevel = .home
-        currentCharge = "20"
-        targetCharge = "80"
-        isDemoActive = true
-        
-        // Auto-calculate after filling demo data
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-            withAnimation {
-                showResults = true
-            }
-        }
-    }
-    
-    private func clearDemoData() {
-        batteryCapacity = ""
-        dailyMiles = ""
-        vehicleEfficiency = ""
-        electricityRate = ""
-        chargeLevel = .home
-        currentCharge = "20"
-        targetCharge = "80"
-        selectedEV = nil
-        isDemoActive = false
-        
-        withAnimation {
-            showResults = false
         }
     }
 }

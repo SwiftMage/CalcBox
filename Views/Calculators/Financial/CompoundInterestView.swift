@@ -7,11 +7,11 @@ struct CompoundInterestView: View {
     @State private var interestRate = ""
     @State private var years = ""
     @State private var compoundFrequency = CompoundFrequency.monthly
-    @State private var timePeriod = TimePeriod.years10
     
     @State private var showResults = false
     @State private var yearlyBreakdown: [YearlyBreakdown] = []
-    @State private var showYearlyTable = false
+    @State private var isDemoActive = false
+    @State private var showInfo = false
     
     enum CompoundFrequency: Int, CaseIterable {
         case annually = 1
@@ -28,32 +28,6 @@ struct CompoundInterestView: View {
             case .monthly: return "Monthly"
             case .daily: return "Daily"
             }
-        }
-    }
-    
-    enum TimePeriod: Int, CaseIterable {
-        case years5 = 5
-        case years10 = 10
-        case years15 = 15
-        case years20 = 20
-        case years25 = 25
-        case years30 = 30
-        case custom = 0
-        
-        var displayName: String {
-            switch self {
-            case .years5: return "5 Years"
-            case .years10: return "10 Years"
-            case .years15: return "15 Years"
-            case .years20: return "20 Years"
-            case .years25: return "25 Years"
-            case .years30: return "30 Years"
-            case .custom: return "Custom"
-            }
-        }
-        
-        var yearsValue: String {
-            return rawValue == 0 ? "" : String(rawValue)
         }
     }
     
@@ -103,107 +77,78 @@ struct CompoundInterestView: View {
             title: "Compound Interest",
             description: "Calculate how your investment grows over time"
         ) {
-            VStack(spacing: 24) {
-                // Enhanced Input Fields Section
-                VStack(alignment: .leading, spacing: 20) {
-                    Text("Investment Details")
-                        .font(.title2)
-                        .fontWeight(.semibold)
-                        .foregroundColor(.primary)
+            VStack(spacing: 20) {
+                // Quick Action Buttons
+                HStack(spacing: 8) {
+                    QuickActionButton(
+                        icon: "wand.and.stars.inverse",
+                        title: "Example",
+                        color: .blue
+                    ) {
+                        fillDemoDataAndCalculate()
+                    }
                     
-                    VStack(spacing: 16) {
-                        EnhancedInputField(
-                            title: "Initial Investment",
-                            value: $principal,
-                            placeholder: "10,000",
-                            prefix: "$",
-                            icon: "dollarsign.circle.fill",
+                    QuickActionButton(
+                        icon: "trash",
+                        title: "Clear",
+                        color: .red
+                    ) {
+                        clearAllData()
+                    }
+                    
+                    QuickActionButton(
+                        icon: "info.circle",
+                        title: "Info",
+                        color: .gray
+                    ) {
+                        showInfo = true
+                    }
+                    
+                    if showResults {
+                        QuickActionButton(
+                            icon: "square.and.arrow.up",
+                            title: "Share",
                             color: .green
-                        )
-                        
-                        EnhancedInputField(
-                            title: "Monthly Contribution",
-                            value: $monthlyContribution,
-                            placeholder: "500",
-                            prefix: "$",
-                            icon: "calendar.badge.plus",
-                            color: .blue
-                        )
-                        
-                        EnhancedInputField(
-                            title: "Annual Interest Rate",
-                            value: $interestRate,
-                            placeholder: "7.0",
-                            suffix: "%",
-                            icon: "percent",
-                            color: .orange
-                        )
-                    }
-                }
-                .padding(20)
-                .background(Color(.systemGray6))
-                .clipShape(RoundedRectangle(cornerRadius: 16))
-                
-                // Time Period Selector
-                VStack(alignment: .leading, spacing: 16) {
-                    Text("Investment Period")
-                        .font(.title2)
-                        .fontWeight(.semibold)
-                        .foregroundColor(.primary)
-                    
-                    // Quick Time Period Buttons
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(spacing: 12) {
-                            ForEach(TimePeriod.allCases, id: \.self) { period in
-                                TimePeriodButton(
-                                    period: period,
-                                    isSelected: timePeriod == period,
-                                    action: {
-                                        timePeriod = period
-                                        if period != .custom {
-                                            years = period.yearsValue
-                                        }
-                                    }
-                                )
-                            }
-                        }
-                        .padding(.horizontal, 4)
-                    }
-                    
-                    // Custom years input (only show if custom is selected)
-                    if timePeriod == .custom {
-                        EnhancedInputField(
-                            title: "Custom Years",
-                            value: $years,
-                            placeholder: "25",
-                            suffix: "years",
-                            icon: "calendar",
-                            color: .purple
-                        )
-                        .transition(.move(edge: .top).combined(with: .opacity))
-                    }
-                }
-                .padding(20)
-                .background(Color(.systemGray6))
-                .clipShape(RoundedRectangle(cornerRadius: 16))
-                
-                // Compound Frequency
-                VStack(alignment: .leading, spacing: 16) {
-                    Text("Compound Frequency")
-                        .font(.title2)
-                        .fontWeight(.semibold)
-                        .foregroundColor(.primary)
-                    
-                    Picker("Compound Frequency", selection: $compoundFrequency) {
-                        ForEach(CompoundFrequency.allCases, id: \.self) { frequency in
-                            Text(frequency.displayName).tag(frequency)
+                        ) {
+                            shareResults()
                         }
                     }
-                    .pickerStyle(SegmentedPickerStyle())
                 }
-                .padding(20)
-                .background(Color(.systemGray6))
-                .clipShape(RoundedRectangle(cornerRadius: 16))
+                
+                // Input Fields
+                CalculatorInputField(
+                    title: "Initial Investment",
+                    value: $principal,
+                    placeholder: "10000",
+                    suffix: "$"
+                )
+                
+                CalculatorInputField(
+                    title: "Monthly Contribution",
+                    value: $monthlyContribution,
+                    placeholder: "500",
+                    suffix: "$"
+                )
+                
+                CalculatorInputField(
+                    title: "Annual Interest Rate",
+                    value: $interestRate,
+                    placeholder: "7",
+                    suffix: "%"
+                )
+                
+                CalculatorInputField(
+                    title: "Investment Period",
+                    value: $years,
+                    placeholder: "10",
+                    suffix: "years"
+                )
+                
+                SegmentedPicker(
+                    title: "Compound Frequency",
+                    selection: $compoundFrequency,
+                    options: CompoundFrequency.allCases.map { ($0, $0.displayName) }
+                )
                 
                 // Calculate Button
                 CalculatorButton(title: "Calculate Growth") {
@@ -217,7 +162,6 @@ struct CompoundInterestView: View {
                 if showResults {
                     VStack(spacing: 16) {
                         Divider()
-                            .id("results")
                         
                         Text("Results")
                             .font(.title2)
@@ -284,41 +228,6 @@ struct CompoundInterestView: View {
                             .clipShape(RoundedRectangle(cornerRadius: 12))
                         }
                         
-                        // Yearly Breakdown Table
-                        if !yearlyBreakdown.isEmpty {
-                            VStack(alignment: .leading, spacing: 16) {
-                                HStack {
-                                    Text("Yearly Breakdown")
-                                        .font(.headline)
-                                    
-                                    Spacer()
-                                    
-                                    Button(action: {
-                                        withAnimation(.spring()) {
-                                            showYearlyTable.toggle()
-                                        }
-                                    }) {
-                                        HStack(spacing: 4) {
-                                            Text(showYearlyTable ? "Hide Table" : "Show Table")
-                                                .font(.subheadline)
-                                                .fontWeight(.medium)
-                                            Image(systemName: showYearlyTable ? "chevron.up" : "chevron.down")
-                                                .font(.caption)
-                                        }
-                                        .foregroundColor(.blue)
-                                    }
-                                }
-                                
-                                if showYearlyTable {
-                                    YearlyBreakdownTable(yearlyData: yearlyBreakdown)
-                                        .transition(.move(edge: .top).combined(with: .opacity))
-                                }
-                            }
-                            .padding()
-                            .background(Color(.systemGray6))
-                            .clipShape(RoundedRectangle(cornerRadius: 12))
-                        }
-                        
                         // Summary
                         VStack(spacing: 8) {
                             InfoRow(
@@ -342,17 +251,44 @@ struct CompoundInterestView: View {
                 }
             }
         }
-        .onChange(of: years) { newValue in
-            // Update time period selection when years changes manually
-            if let yearValue = Double(newValue), yearValue > 0 {
-                let intYears = Int(yearValue)
-                if let matchingPeriod = TimePeriod.allCases.first(where: { $0.rawValue == intYears }) {
-                    timePeriod = matchingPeriod
-                } else {
-                    timePeriod = .custom
-                }
-            }
+        .sheet(isPresented: $showInfo) {
+            CompoundInterestInfoSheet()
         }
+    }
+    
+    private func fillDemoData() {
+        principal = "10000"
+        monthlyContribution = "500"
+        interestRate = "7.0"
+        years = "25"
+        compoundFrequency = .monthly
+        isDemoActive = true
+    }
+    
+    private func fillDemoDataAndCalculate() {
+        fillDemoData()
+        calculateBreakdown()
+        withAnimation {
+            showResults = true
+        }
+    }
+    
+    private func clearAllData() {
+        clearDemoData()
+    }
+    
+    private func clearDemoData() {
+        principal = ""
+        monthlyContribution = ""
+        interestRate = ""
+        years = ""
+        compoundFrequency = .monthly
+        isDemoActive = false
+        
+        withAnimation {
+            showResults = false
+        }
+        yearlyBreakdown = []
     }
     
     private func calculateBreakdown() {
@@ -393,175 +329,78 @@ struct CompoundInterestView: View {
         
         yearlyBreakdown = breakdown
     }
-}
-
-// MARK: - Enhanced UI Components
-
-struct EnhancedInputField: View {
-    let title: String
-    @Binding var value: String
-    let placeholder: String
-    let prefix: String?
-    let suffix: String?
-    let icon: String
-    let color: Color
     
-    init(
-        title: String,
-        value: Binding<String>,
-        placeholder: String,
-        prefix: String? = nil,
-        suffix: String? = nil,
-        icon: String,
-        color: Color
-    ) {
-        self.title = title
-        self._value = value
-        self.placeholder = placeholder
-        self.prefix = prefix
-        self.suffix = suffix
-        self.icon = icon
-        self.color = color
-    }
-    
-    var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack(spacing: 8) {
-                Image(systemName: icon)
-                    .foregroundColor(color)
-                    .font(.title3)
-                
-                Text(title)
-                    .font(.subheadline)
-                    .fontWeight(.medium)
-                    .foregroundColor(.primary)
-            }
-            
-            HStack(spacing: 8) {
-                if let prefix = prefix {
-                    Text(prefix)
-                        .font(.title2)
-                        .fontWeight(.semibold)
-                        .foregroundColor(color)
-                }
-                
-                TextField(placeholder, text: $value)
-                    .keyboardType(.decimalPad)
-                    .font(.title2)
-                    .fontWeight(.medium)
-                    .textFieldStyle(PlainTextFieldStyle())
-                
-                if let suffix = suffix {
-                    Text(suffix)
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
-                }
-            }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 12)
-            .background(Color(.systemBackground))
-            .overlay(
-                RoundedRectangle(cornerRadius: 12)
-                    .stroke(color.opacity(0.3), lineWidth: 2)
-            )
-            .clipShape(RoundedRectangle(cornerRadius: 12))
-        }
-    }
-}
-
-struct TimePeriodButton: View {
-    let period: CompoundInterestView.TimePeriod
-    let isSelected: Bool
-    let action: () -> Void
-    
-    var body: some View {
-        Button(action: action) {
-            Text(period.displayName)
-                .font(.subheadline)
-                .fontWeight(.medium)
-                .padding(.horizontal, 16)
-                .padding(.vertical, 8)
-                .background(isSelected ? Color.blue : Color(.systemGray5))
-                .foregroundColor(isSelected ? .white : .primary)
-                .clipShape(Capsule())
-        }
-        .buttonStyle(PlainButtonStyle())
-    }
-}
-
-struct YearlyBreakdownTable: View {
-    let yearlyData: [CompoundInterestView.YearlyBreakdown]
-    
-    var body: some View {
-        VStack(spacing: 0) {
-            // Header
-            HStack {
-                Text("Year")
-                    .font(.caption)
-                    .fontWeight(.semibold)
-                    .foregroundColor(.secondary)
-                    .frame(width: 40, alignment: .leading)
-                
-                Text("Principal")
-                    .font(.caption)
-                    .fontWeight(.semibold)
-                    .foregroundColor(.secondary)
-                    .frame(maxWidth: .infinity, alignment: .trailing)
-                
-                Text("Interest")
-                    .font(.caption)
-                    .fontWeight(.semibold)
-                    .foregroundColor(.secondary)
-                    .frame(maxWidth: .infinity, alignment: .trailing)
-                
-                Text("Total")
-                    .font(.caption)
-                    .fontWeight(.semibold)
-                    .foregroundColor(.secondary)
-                    .frame(maxWidth: .infinity, alignment: .trailing)
-            }
-            .padding(.vertical, 8)
-            .padding(.horizontal, 12)
-            .background(Color(.systemGray4))
-            
-            Divider()
-            
-            ScrollView {
-                LazyVStack(spacing: 0) {
-                    ForEach(yearlyData) { item in
-                        HStack {
-                            Text("\(item.year)")
-                                .font(.system(.subheadline, design: .monospaced))
-                                .frame(width: 40, alignment: .leading)
-                            
-                            Text(NumberFormatter.formatCurrency(item.principal))
-                                .font(.system(.subheadline, design: .monospaced))
-                                .frame(maxWidth: .infinity, alignment: .trailing)
-                            
-                            Text(NumberFormatter.formatCurrency(item.interest))
-                                .font(.system(.subheadline, design: .monospaced))
-                                .foregroundColor(.blue)
-                                .frame(maxWidth: .infinity, alignment: .trailing)
-                            
-                            Text(NumberFormatter.formatCurrency(item.total))
-                                .font(.system(.subheadline, design: .monospaced))
-                                .fontWeight(.medium)
-                                .frame(maxWidth: .infinity, alignment: .trailing)
-                        }
-                        .padding(.vertical, 6)
-                        .padding(.horizontal, 12)
-                        .background(item.year % 2 == 0 ? Color(.systemGray6) : Color(.systemBackground))
-                    }
-                }
-            }
-            .frame(maxHeight: 300)
-        }
-        .background(Color(.systemBackground))
-        .clipShape(RoundedRectangle(cornerRadius: 8))
-        .overlay(
-            RoundedRectangle(cornerRadius: 8)
-                .stroke(Color(.systemGray4), lineWidth: 1)
+    private func shareResults() {
+        let shareText = """
+        Compound Interest Results:
+        Initial Investment: $\(principal)
+        Monthly Contribution: $\(monthlyContribution)
+        Annual Rate: \(interestRate)%
+        Investment Period: \(years) years
+        Final Value: \(NumberFormatter.formatCurrency(totalAmount))
+        Total Interest: \(NumberFormatter.formatCurrency(totalInterest))
+        """
+        
+        let activityVC = UIActivityViewController(
+            activityItems: [shareText],
+            applicationActivities: nil
         )
+        
+        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+           let window = windowScene.windows.first {
+            window.rootViewController?.present(activityVC, animated: true)
+        }
+    }
+}
+
+struct CompoundInterestInfoSheet: View {
+    @Environment(\.dismiss) private var dismiss
+    
+    var body: some View {
+        NavigationView {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 20) {
+                    Text("About Compound Interest Calculator")
+                        .font(.title)
+                        .fontWeight(.bold)
+                    
+                    VStack(alignment: .leading, spacing: 16) {
+                        InfoSection(
+                            title: "How it works",
+                            content: "Compound interest is interest calculated on the initial principal and also on the accumulated interest from previous periods. This calculator shows how your investment grows over time with regular contributions."
+                        )
+                        
+                        InfoSection(
+                            title: "Key Concepts",
+                            content: """
+                            • Principal: Your initial investment amount
+                            • Contributions: Regular monthly deposits
+                            • Interest Rate: Annual percentage return
+                            • Compounding: How often interest is calculated
+                            • Time: Investment period in years
+                            """
+                        )
+                        
+                        InfoSection(
+                            title: "Investment Tips",
+                            content: """
+                            • Start investing early to maximize compounding
+                            • Make regular contributions consistently
+                            • Higher compound frequency = more growth
+                            • Time in market beats timing the market
+                            • Consider tax-advantaged accounts (401k, IRA)
+                            """
+                        )
+                    }
+                    
+                    Spacer()
+                }
+                .padding()
+            }
+            .navigationTitle("Investment Help")
+            .navigationBarTitleDisplayMode(.inline)
+            .navigationBarItems(trailing: Button("Done") { dismiss() })
+        }
     }
 }
 

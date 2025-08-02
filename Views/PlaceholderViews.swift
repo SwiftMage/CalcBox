@@ -15,6 +15,7 @@ struct PaycheckCalculatorView: View {
     @State private var retirement401k = ""
     @State private var otherDeductions = ""
     @State private var showResults = false
+    @State private var isDemoActive = false
     
     enum PayFrequency: String, CaseIterable {
         case weekly = "Weekly"
@@ -175,10 +176,20 @@ struct PaycheckCalculatorView: View {
                     }
                 }
                 
-                // Calculate Button
-                CalculatorButton(title: "Calculate Paycheck") {
-                    withAnimation {
-                        showResults = true
+                // Action Buttons
+                HStack(spacing: 12) {
+                    CalculatorButton(title: isDemoActive ? "Clear Demo" : "Try Demo", style: .secondary) {
+                        if isDemoActive {
+                            clearDemoData()
+                        } else {
+                            fillDemoData()
+                        }
+                    }
+                    
+                    CalculatorButton(title: "Calculate Paycheck") {
+                        withAnimation {
+                            showResults = true
+                        }
                     }
                 }
                 
@@ -342,6 +353,43 @@ struct PaycheckCalculatorView: View {
                     .transition(.move(edge: .bottom).combined(with: .opacity))
                 }
             }
+        }
+    }
+    
+    private func fillDemoData() {
+        salary = "75000"
+        payFrequency = .biweekly
+        federalWithholding = "22"
+        stateWithholding = "5"
+        socialSecurity = "6.2"
+        medicare = "1.45"
+        healthInsurance = "150"
+        retirement401k = "6"
+        otherDeductions = "50"
+        isDemoActive = true
+        
+        // Auto-calculate after filling demo data
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            withAnimation {
+                showResults = true
+            }
+        }
+    }
+    
+    private func clearDemoData() {
+        salary = ""
+        payFrequency = .biweekly
+        federalWithholding = "22"
+        stateWithholding = "5"
+        socialSecurity = "6.2"
+        medicare = "1.45"
+        healthInsurance = ""
+        retirement401k = ""
+        otherDeductions = ""
+        isDemoActive = false
+        
+        withAnimation {
+            showResults = false
         }
     }
 }
@@ -2266,6 +2314,7 @@ struct MPGCalculatorView: View {
     @State private var gallonsUsed = ""
     @State private var fuelCost = ""
     @State private var showResults = false
+    @State private var isDemoActive = false
     
     var mpg: Double {
         guard let miles = Double(milesDriven),
@@ -2331,10 +2380,20 @@ struct MPGCalculatorView: View {
                     suffix: "$"
                 )
                 
-                // Calculate Button
-                CalculatorButton(title: "Calculate MPG") {
-                    withAnimation {
-                        showResults = true
+                // Action Buttons
+                HStack(spacing: 12) {
+                    CalculatorButton(title: isDemoActive ? "Clear Demo" : "Try Demo", style: .secondary) {
+                        if isDemoActive {
+                            clearDemoData()
+                        } else {
+                            fillDemoData()
+                        }
+                    }
+                    
+                    CalculatorButton(title: "Calculate MPG") {
+                        withAnimation {
+                            showResults = true
+                        }
                     }
                 }
                 
@@ -2454,6 +2513,30 @@ struct MPGCalculatorView: View {
             }
         }
     }
+    
+    private func fillDemoData() {
+        milesDriven = "350"
+        gallonsUsed = "12.5"
+        fuelCost = "45.00"
+        isDemoActive = true
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            withAnimation {
+                showResults = true
+            }
+        }
+    }
+    
+    private func clearDemoData() {
+        milesDriven = ""
+        gallonsUsed = ""
+        fuelCost = ""
+        isDemoActive = false
+        
+        withAnimation {
+            showResults = false
+        }
+    }
 }
 
 struct TripTimeView: View {
@@ -2463,6 +2546,7 @@ struct TripTimeView: View {
     @State private var stopDuration = "15"
     @State private var unitSystem = UnitSystem.miles
     @State private var showResults = false
+    @State private var isDemoActive = false
     
     enum UnitSystem: String, CaseIterable {
         case miles = "Miles/MPH"
@@ -2550,10 +2634,20 @@ struct TripTimeView: View {
                     suffix: "minutes each"
                 )
                 
-                // Calculate Button
-                CalculatorButton(title: "Calculate Trip Time") {
-                    withAnimation {
-                        showResults = true
+                // Action Buttons
+                HStack(spacing: 12) {
+                    CalculatorButton(title: isDemoActive ? "Clear Demo" : "Try Demo", style: .secondary) {
+                        if isDemoActive {
+                            clearDemoData()
+                        } else {
+                            fillDemoData()
+                        }
+                    }
+                    
+                    CalculatorButton(title: "Calculate Trip Time") {
+                        withAnimation {
+                            showResults = true
+                        }
                     }
                 }
                 
@@ -2687,6 +2781,34 @@ struct TripTimeView: View {
             }
         }
     }
+    
+    private func fillDemoData() {
+        distance = "250"
+        speed = "65"
+        stops = "2"
+        stopDuration = "15"
+        unitSystem = .miles
+        isDemoActive = true
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            withAnimation {
+                showResults = true
+            }
+        }
+    }
+    
+    private func clearDemoData() {
+        distance = ""
+        speed = ""
+        stops = ""
+        stopDuration = "15"
+        unitSystem = .miles
+        isDemoActive = false
+        
+        withAnimation {
+            showResults = false
+        }
+    }
 }
 
 extension DateFormatter {
@@ -2704,6 +2826,7 @@ struct CalorieBurnView: View {
     @State private var selectedActivity = Activity.running
     @State private var intensity = Intensity.moderate
     @State private var showResults = false
+    @State private var isDemoActive = false
     
     enum Activity: String, CaseIterable {
         case running = "Running"
@@ -2819,10 +2942,20 @@ struct CalorieBurnView: View {
                     options: Intensity.allCases.map { ($0, $0.rawValue) }
                 )
                 
-                // Calculate Button
-                CalculatorButton(title: "Calculate Calories") {
-                    withAnimation {
-                        showResults = true
+                // Action Buttons
+                HStack(spacing: 12) {
+                    CalculatorButton(title: isDemoActive ? "Clear Demo" : "Try Demo", style: .secondary) {
+                        if isDemoActive {
+                            clearDemoData()
+                        } else {
+                            fillDemoData()
+                        }
+                    }
+                    
+                    CalculatorButton(title: "Calculate Calories") {
+                        withAnimation {
+                            showResults = true
+                        }
                     }
                 }
                 
@@ -2936,6 +3069,32 @@ struct CalorieBurnView: View {
                     .transition(.move(edge: .bottom).combined(with: .opacity))
                 }
             }
+        }
+    }
+    
+    private func fillDemoData() {
+        weight = "150"
+        duration = "30"
+        selectedActivity = .running
+        intensity = .moderate
+        isDemoActive = true
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            withAnimation {
+                showResults = true
+            }
+        }
+    }
+    
+    private func clearDemoData() {
+        weight = ""
+        duration = ""
+        selectedActivity = .running
+        intensity = .moderate
+        isDemoActive = false
+        
+        withAnimation {
+            showResults = false
         }
     }
 }
@@ -4121,18 +4280,15 @@ struct MonthlyBillsView: View {
     }
     
     var billsByCategory: [(category: BillCategory, total: Double)] {
-        BillCategory.allCases.map { category in
-            let total = bills
-                .filter { $0.category == category && !$0.amount.isEmpty && !$0.name.isEmpty }
-                .compactMap { Double($0.amount) }
-                .enumerated()
-                .map { index, amount in
-                    let bill = bills.filter { $0.category == category }[index]
-                    return amount * bill.frequency.monthlyMultiplier
-                }
-                .reduce(0, +)
-            return (category, total)
-        }.filter { $0.total > 0 }
+        BillCategory.allCases.compactMap { category in
+            let categoryBills = bills.filter { $0.category == category && !$0.amount.isEmpty && !$0.name.isEmpty }
+            let total = categoryBills.compactMap { bill in
+                guard let amount = Double(bill.amount) else { return nil }
+                return amount * bill.frequency.monthlyMultiplier
+            }.reduce(0.0) { $0 + $1 }
+            
+            return total > 0 ? (category, total) : nil
+        }
     }
     
     var body: some View {
@@ -4379,7 +4535,7 @@ struct RentingCostView: View {
     @State private var showResults = false
     
     var totalMonthlyCost: Double {
-        let costs = [
+        let costs: [Double] = [
             Double(monthlyRent) ?? 0,
             Double(utilities) ?? 0,
             Double(parking) ?? 0,
@@ -4400,18 +4556,25 @@ struct RentingCostView: View {
     }
     
     var costBreakdown: [(category: String, amount: Double, percentage: Double)] {
-        let items = [
-            ("Base Rent", Double(monthlyRent) ?? 0),
-            ("Utilities", Double(utilities) ?? 0),
-            ("Parking", Double(parking) ?? 0),
-            ("Insurance", Double(insurance) ?? 0),
-            ("Other Fees", Double(otherFees) ?? 0)
+        let baseRent = Double(monthlyRent) ?? 0
+        let utilitiesCost = Double(utilities) ?? 0
+        let parkingCost = Double(parking) ?? 0
+        let insuranceCost = Double(insurance) ?? 0
+        let otherFeesCost = Double(otherFees) ?? 0
+        
+        let items: [(String, Double)] = [
+            ("Base Rent", baseRent),
+            ("Utilities", utilitiesCost),
+            ("Parking", parkingCost),
+            ("Insurance", insuranceCost),
+            ("Other Fees", otherFeesCost)
         ]
         
-        return items.map { (category, amount) in
+        return items.compactMap { (category, amount) in
+            guard amount > 0 else { return nil }
             let percentage = totalMonthlyCost > 0 ? (amount / totalMonthlyCost) * 100 : 0
             return (category, amount, percentage)
-        }.filter { $0.amount > 0 }
+        }
     }
     
     var body: some View {
@@ -4972,13 +5135,20 @@ struct SchoolCostView: View {
     @State private var showResults = false
     
     var totalAnnualCost: Double {
-        let costs = [
-            Double(tuition) ?? 0,
-            Double(roomBoard) ?? 0,
-            Double(books) ?? 0,
-            Double(transportation) ?? 0,
-            Double(personal) ?? 0,
-            Double(other) ?? 0
+        let tuitionCost = Double(tuition) ?? 0
+        let roomBoardCost = Double(roomBoard) ?? 0
+        let booksCost = Double(books) ?? 0
+        let transportationCost = Double(transportation) ?? 0
+        let personalCost = Double(personal) ?? 0
+        let otherCost = Double(other) ?? 0
+        
+        let costs: [Double] = [
+            tuitionCost,
+            roomBoardCost,
+            booksCost,
+            transportationCost,
+            personalCost,
+            otherCost
         ]
         return costs.reduce(0, +)
     }
@@ -4994,19 +5164,27 @@ struct SchoolCostView: View {
     }
     
     var costBreakdown: [(category: String, amount: Double, percentage: Double)] {
-        let items = [
-            ("Tuition & Fees", Double(tuition) ?? 0),
-            ("Room & Board", Double(roomBoard) ?? 0),
-            ("Books & Supplies", Double(books) ?? 0),
-            ("Transportation", Double(transportation) ?? 0),
-            ("Personal Expenses", Double(personal) ?? 0),
-            ("Other Costs", Double(other) ?? 0)
+        let tuitionAmount = Double(tuition) ?? 0
+        let roomBoardAmount = Double(roomBoard) ?? 0
+        let booksAmount = Double(books) ?? 0
+        let transportationAmount = Double(transportation) ?? 0
+        let personalAmount = Double(personal) ?? 0
+        let otherAmount = Double(other) ?? 0
+        
+        let items: [(String, Double)] = [
+            ("Tuition & Fees", tuitionAmount),
+            ("Room & Board", roomBoardAmount),
+            ("Books & Supplies", booksAmount),
+            ("Transportation", transportationAmount),
+            ("Personal Expenses", personalAmount),
+            ("Other Costs", otherAmount)
         ]
         
-        return items.map { (category, amount) in
+        return items.compactMap { (category, amount) in
+            guard amount > 0 else { return nil }
             let percentage = totalAnnualCost > 0 ? (amount / totalAnnualCost) * 100 : 0
             return (category, amount, percentage)
-        }.filter { $0.amount > 0 }
+        }
     }
     
     var body: some View {
@@ -5256,6 +5434,7 @@ struct TipCalculatorView: View {
     @State private var tipPercentage = "20"
     @State private var numberOfPeople = "1"
     @State private var showResults = false
+    @State private var isDemoActive = false
     
     var totalTip: Double {
         guard let bill = Double(billAmount),
@@ -5329,10 +5508,20 @@ struct TipCalculatorView: View {
                     }
                 }
                 
-                // Calculate Button
-                CalculatorButton(title: "Calculate Tip") {
-                    withAnimation {
-                        showResults = true
+                // Action Buttons
+                HStack(spacing: 12) {
+                    CalculatorButton(title: isDemoActive ? "Clear Demo" : "Try Demo", style: .secondary) {
+                        if isDemoActive {
+                            clearDemoData()
+                        } else {
+                            fillDemoData()
+                        }
+                    }
+                    
+                    CalculatorButton(title: "Calculate Tip") {
+                        withAnimation {
+                            showResults = true
+                        }
                     }
                 }
                 
@@ -5389,6 +5578,31 @@ struct TipCalculatorView: View {
                     .transition(.move(edge: .bottom).combined(with: .opacity))
                 }
             }
+        }
+    }
+    
+    private func fillDemoData() {
+        billAmount = "85.50"
+        tipPercentage = "20"
+        numberOfPeople = "4"
+        isDemoActive = true
+        
+        // Auto-calculate after filling demo data
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            withAnimation {
+                showResults = true
+            }
+        }
+    }
+    
+    private func clearDemoData() {
+        billAmount = ""
+        tipPercentage = "20"
+        numberOfPeople = "1"
+        isDemoActive = false
+        
+        withAnimation {
+            showResults = false
         }
     }
 }
@@ -6776,6 +6990,18 @@ struct TimeZoneConverterView: View {
     @State private var toTimeZone = TimeZoneOption.london
     @State private var showResults = false
     
+    var fromTimeString: String {
+        let formatter = dateTimeFormatter
+        formatter.timeZone = fromTimeZone.timeZone
+        return formatter.string(from: selectedTime)
+    }
+    
+    var toTimeString: String {
+        let formatter = dateTimeFormatter
+        formatter.timeZone = toTimeZone.timeZone
+        return formatter.string(from: selectedTime)
+    }
+    
     enum TimeZoneOption: String, CaseIterable {
         case newYork = "New York (EST/EDT)"
         case losAngeles = "Los Angeles (PST/PDT)"
@@ -6957,9 +7183,7 @@ struct TimeZoneConverterView: View {
                                     .font(.subheadline)
                                     .foregroundColor(.secondary)
                                 
-                                let fromFormatter = dateTimeFormatter
-                                fromFormatter.timeZone = fromTimeZone.timeZone
-                                Text(fromFormatter.string(from: selectedTime))
+                                Text(fromTimeString)
                                     .font(.title2)
                                     .fontWeight(.semibold)
                             }
@@ -6978,9 +7202,7 @@ struct TimeZoneConverterView: View {
                                     .font(.subheadline)
                                     .foregroundColor(.secondary)
                                 
-                                let toFormatter = dateTimeFormatter
-                                toFormatter.timeZone = toTimeZone.timeZone
-                                Text(toFormatter.string(from: selectedTime))
+                                Text(toTimeString)
                                     .font(.title2)
                                     .fontWeight(.semibold)
                                     .foregroundColor(.green)

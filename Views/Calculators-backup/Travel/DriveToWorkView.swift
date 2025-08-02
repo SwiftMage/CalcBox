@@ -10,12 +10,11 @@ struct DriveToWorkView: View {
     @State private var gasPrice = ""
     
     // Electric vehicle inputs
-    @State private var milesPerKWh = ""
+    @State private var milesPerKWh = "3.5"
     @State private var electricityRate = ""
     @State private var chargingEfficiency = "90"
     
     @State private var showResults = false
-    @State private var isDemoActive = false
     
     enum VehicleType: String, CaseIterable {
         case gas = "Gas Vehicle"
@@ -88,12 +87,14 @@ struct DriveToWorkView: View {
     // CO2 calculations (lbs per year)
     var gasCO2Emissions: Double {
         // Average: 19.6 lbs CO2 per gallon of gasoline
-        dailyGallons * (Double(workDaysPerWeek ?? "0") ?? 0) * 52 * 19.6
+        guard let workDays = Double(workDaysPerWeek) else { return 0 }
+        return dailyGallons * workDays * 52 * 19.6
     }
     
     var electricCO2Emissions: Double {
         // Average US grid: 0.85 lbs CO2 per kWh
-        dailyKWh * (Double(workDaysPerWeek ?? "0") ?? 0) * 52 * 0.85
+        guard let workDays = Double(workDaysPerWeek) else { return 0 }
+        return dailyKWh * workDays * 52 * 0.85
     }
     
     var body: some View {
@@ -101,87 +102,105 @@ struct DriveToWorkView: View {
             title: "Drive to Work",
             description: "Compare commuting costs for gas and electric vehicles"
         ) {
-            VStack(spacing: 20) {
+            VStack(spacing: 24) {
                 // Vehicle Type Selection
-                SegmentedPicker(
+                SegmentedInputField(
                     title: "Vehicle Type",
                     selection: $vehicleType,
-                    options: VehicleType.allCases.map { ($0, $0.rawValue) }
+                    options: VehicleType.allCases.map { ($0, $0.rawValue) },
+                    icon: "car.fill",
+                    color: vehicleType == .gas ? .orange : .green
                 )
                 
-                // Common Inputs
-                VStack(spacing: 16) {
-                    CalculatorInputField(
-                        title: "Daily Commute Distance",
-                        value: $dailyMiles,
-                        placeholder: "30",
-                        suffix: "miles"
-                    )
-                    
-                    CalculatorInputField(
-                        title: "Work Days Per Week",
-                        value: $workDaysPerWeek,
-                        placeholder: "5",
-                        suffix: "days"
-                    )
+                // Commute Details
+                GroupedInputFields(
+                    title: "Commute Details",
+                    icon: "map.fill",
+                    color: .blue
+                ) {
+                    HStack(spacing: 16) {
+                        CompactInputField(
+                            title: "Daily Round Trip",
+                            value: $dailyMiles,
+                            placeholder: "30",
+                            suffix: "miles",
+                            color: .blue
+                        )
+                        
+                        CompactInputField(
+                            title: "Work Days",
+                            value: $workDaysPerWeek,
+                            placeholder: "5",
+                            suffix: "days/week",
+                            color: .purple
+                        )
+                    }
                 }
                 
                 // Vehicle-specific inputs
                 if vehicleType == .gas {
-                    VStack(spacing: 16) {
-                        CalculatorInputField(
-                            title: "Miles Per Gallon (MPG)",
-                            value: $mpg,
-                            placeholder: "25",
-                            suffix: "mpg"
-                        )
-                        
-                        CalculatorInputField(
-                            title: "Gas Price",
-                            value: $gasPrice,
-                            placeholder: "3.50",
-                            suffix: "$/gallon"
-                        )
+                    GroupedInputFields(
+                        title: "Gas Vehicle Details",
+                        icon: "fuelpump.fill",
+                        color: .orange
+                    ) {
+                        HStack(spacing: 16) {
+                            CompactInputField(
+                                title: "Fuel Efficiency",
+                                value: $mpg,
+                                placeholder: "25",
+                                suffix: "mpg",
+                                color: .orange
+                            )
+                            
+                            CompactInputField(
+                                title: "Gas Price",
+                                value: $gasPrice,
+                                placeholder: "3.50",
+                                prefix: "$",
+                                color: .red
+                            )
+                        }
                     }
                 } else {
-                    VStack(spacing: 16) {
-                        CalculatorInputField(
+                    GroupedInputFields(
+                        title: "Electric Vehicle Details",
+                        icon: "bolt.car.fill",
+                        color: .green
+                    ) {
+                        ModernInputField(
                             title: "Vehicle Efficiency",
                             value: $milesPerKWh,
                             placeholder: "3.5",
-                            suffix: "miles/kWh"
+                            suffix: "miles/kWh",
+                            icon: "bolt.circle.fill",
+                            color: .green
                         )
                         
-                        CalculatorInputField(
-                            title: "Electricity Rate",
-                            value: $electricityRate,
-                            placeholder: "0.13",
-                            suffix: "$/kWh"
-                        )
-                        
-                        CalculatorInputField(
-                            title: "Charging Efficiency",
-                            value: $chargingEfficiency,
-                            placeholder: "90",
-                            suffix: "%"
-                        )
+                        HStack(spacing: 16) {
+                            CompactInputField(
+                                title: "Electricity Rate",
+                                value: $electricityRate,
+                                placeholder: "0.13",
+                                prefix: "$",
+                                color: .blue
+                            )
+                            
+                            CompactInputField(
+                                title: "Charging Efficiency",
+                                value: $chargingEfficiency,
+                                placeholder: "90",
+                                suffix: "%",
+                                color: .orange
+                            )
+                        }
                     }
                 }
                 
-                // Action Buttons
-                HStack(spacing: 12) {
-                    CalculatorButton(title: isDemoActive ? "Clear Demo" : "Try Demo", style: .secondary) {
-                        if isDemoActive {
-                            clearDemoData()
-                        } else {
-                            fillDemoData()
-                        }
-                    }
-                    
-                    CalculatorButton(title: "Calculate Costs") {
-                        withAnimation {
-                            showResults = true
-                        }
+                // Calculate Button
+                CalculatorButton(title: "Calculate Costs") {
+                    withAnimation {
+                        showResults = true
                     }
                 }
                 
@@ -189,6 +208,7 @@ struct DriveToWorkView: View {
                 if showResults {
                     VStack(spacing: 20) {
                         Divider()
+                            .id("results")
                         
                         Text("Commute Analysis")
                             .font(.title2)
@@ -243,12 +263,12 @@ struct DriveToWorkView: View {
                             if vehicleType == .gas {
                                 InfoRow(
                                     label: "Fuel consumption",
-                                    value: "\(NumberFormatter.formatDecimal(dailyGallons * (Double(workDaysPerWeek ?? "0") ?? 0) * 52)) gallons/year"
+                                    value: "\(NumberFormatter.formatDecimal(dailyGallons * (Double(workDaysPerWeek) ?? 0) * 52)) gallons/year"
                                 )
                             } else {
                                 InfoRow(
                                     label: "Energy consumption",
-                                    value: "\(NumberFormatter.formatDecimal(dailyKWh * (Double(workDaysPerWeek ?? "0") ?? 0) * 52)) kWh/year"
+                                    value: "\(NumberFormatter.formatDecimal(dailyKWh * (Double(workDaysPerWeek) ?? 0) * 52)) kWh/year"
                                 )
                             }
                         }
@@ -291,40 +311,6 @@ struct DriveToWorkView: View {
                     .transition(.move(edge: .bottom).combined(with: .opacity))
                 }
             }
-        }
-    }
-    
-    private func fillDemoData() {
-        dailyMiles = "25"
-        workDaysPerWeek = "5"
-        vehicleType = .gas
-        mpg = "28"
-        gasPrice = "3.50"
-        milesPerKWh = "3.5"
-        electricityRate = "0.13"
-        isDemoActive = true
-        
-        // Auto-calculate after filling demo data
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-            withAnimation {
-                showResults = true
-            }
-        }
-    }
-    
-    private func clearDemoData() {
-        dailyMiles = ""
-        workDaysPerWeek = ""
-        vehicleType = .gas
-        mpg = ""
-        gasPrice = ""
-        milesPerKWh = ""
-        electricityRate = ""
-        chargingEfficiency = "90"
-        isDemoActive = false
-        
-        withAnimation {
-            showResults = false
         }
     }
     

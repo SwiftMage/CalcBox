@@ -64,6 +64,13 @@ extension Calculator {
             destination: AnyView(RetirementPlanningView())
         ),
         Calculator(
+            name: "Retirement Savings",
+            description: "How long will your savings last",
+            category: .financial,
+            icon: "hourglass",
+            destination: AnyView(RetirementSavingsView())
+        ),
+        Calculator(
             name: "Loan Calculator",
             description: "Calculate loan payments and interest",
             category: .financial,
