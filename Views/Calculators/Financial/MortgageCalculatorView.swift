@@ -87,41 +87,13 @@ struct MortgageCalculatorView: View {
             ScrollViewReader { proxy in
             VStack(spacing: 24) {
                 // Quick Action Buttons
-                HStack(spacing: 8) {
-                    QuickActionButton(
-                        icon: "wand.and.stars.inverse",
-                        title: "Example",
-                        color: .blue
-                    ) {
-                        fillDemoDataAndCalculate()
-                    }
-                    
-                    QuickActionButton(
-                        icon: "trash",
-                        title: "Clear",
-                        color: .red
-                    ) {
-                        clearAllData()
-                    }
-                    
-                    QuickActionButton(
-                        icon: "info.circle",
-                        title: "Info",
-                        color: .gray
-                    ) {
-                        showInfo = true
-                    }
-                    
-                    if showResults {
-                        QuickActionButton(
-                            icon: "square.and.arrow.up",
-                            title: "Share",
-                            color: .green
-                        ) {
-                            shareResults()
-                        }
-                    }
-                }
+                QuickActionButtonRow(
+                    onExample: { fillDemoDataAndCalculate() },
+                    onClear: { clearAllData() },
+                    onInfo: { showInfo = true },
+                    onShare: { shareResults() },
+                    showShare: showResults
+                )
                 
                 // Loan Details
                 VStack(alignment: .leading, spacing: 16) {
