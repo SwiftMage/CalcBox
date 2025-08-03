@@ -1,13 +1,16 @@
 import SwiftUI
 import UIKit
 
+
 // MARK: - Keyboard Toolbar TextField
 
 struct KeyboardToolbarTextField: UIViewRepresentable {
     @Binding var text: String
     let placeholder: String
+    var onPrevious: (() -> Void)?
     var onNext: (() -> Void)?
     var onDone: (() -> Void)?
+    var showPreviousButton: Bool = true
     var showNextButton: Bool = true
     
     func makeUIView(context: Context) -> UITextField {
@@ -21,9 +24,17 @@ struct KeyboardToolbarTextField: UIViewRepresentable {
         
         // Create toolbar
         let toolbar = UIToolbar()
+        toolbar.barStyle = .default
+        toolbar.isTranslucent = true
+        toolbar.tintColor = UIColor.systemBlue
         toolbar.sizeToFit()
         
         var items: [UIBarButtonItem] = []
+        
+        if showPreviousButton {
+            let previousButton = UIBarButtonItem(title: "Previous", style: .plain, target: context.coordinator, action: #selector(Coordinator.previousPressed))
+            items.append(previousButton)
+        }
         
         if showNextButton {
             let nextButton = UIBarButtonItem(title: "Next", style: .plain, target: context.coordinator, action: #selector(Coordinator.nextPressed))
@@ -36,11 +47,13 @@ struct KeyboardToolbarTextField: UIViewRepresentable {
         let doneButton = UIBarButtonItem(title: "Done", style: .done, target: context.coordinator, action: #selector(Coordinator.donePressed))
         items.append(doneButton)
         
-        toolbar.items = items
+        toolbar.setItems(items, animated: false)
+        toolbar.isUserInteractionEnabled = true
         textField.inputAccessoryView = toolbar
         
         // Store references for coordinator
         context.coordinator.textField = textField
+        context.coordinator.onPrevious = onPrevious
         context.coordinator.onNext = onNext
         context.coordinator.onDone = onDone
         
@@ -51,6 +64,7 @@ struct KeyboardToolbarTextField: UIViewRepresentable {
         if uiView.text != text {
             uiView.text = text
         }
+        context.coordinator.onPrevious = onPrevious
         context.coordinator.onNext = onNext
         context.coordinator.onDone = onDone
     }
@@ -62,6 +76,7 @@ struct KeyboardToolbarTextField: UIViewRepresentable {
     class Coordinator: NSObject, UITextFieldDelegate {
         let parent: KeyboardToolbarTextField
         var textField: UITextField?
+        var onPrevious: (() -> Void)?
         var onNext: (() -> Void)?
         var onDone: (() -> Void)?
         
@@ -97,6 +112,10 @@ struct KeyboardToolbarTextField: UIViewRepresentable {
             return true
         }
         
+        @objc func previousPressed() {
+            onPrevious?()
+        }
+        
         @objc func nextPressed() {
             onNext?()
         }
@@ -120,8 +139,10 @@ struct ModernInputField: View {
     let color: Color
     let keyboardType: UIKeyboardType
     let helpText: String?
+    var onPrevious: (() -> Void)?
     var onNext: (() -> Void)?
     var onDone: (() -> Void)?
+    var showPreviousButton: Bool = true
     var showNextButton: Bool = true
     
     private var fieldId: String {
@@ -138,8 +159,10 @@ struct ModernInputField: View {
         color: Color = .blue,
         keyboardType: UIKeyboardType = .decimalPad,
         helpText: String? = nil,
+        onPrevious: (() -> Void)? = nil,
         onNext: (() -> Void)? = nil,
         onDone: (() -> Void)? = nil,
+        showPreviousButton: Bool = true,
         showNextButton: Bool = true
     ) {
         self.title = title
@@ -151,8 +174,10 @@ struct ModernInputField: View {
         self.color = color
         self.keyboardType = keyboardType
         self.helpText = helpText
+        self.onPrevious = onPrevious
         self.onNext = onNext
         self.onDone = onDone
+        self.showPreviousButton = showPreviousButton
         self.showNextButton = showNextButton
     }
     
@@ -183,12 +208,14 @@ struct ModernInputField: View {
                         .frame(minWidth: 20)
                 }
                 
-                if keyboardType == .decimalPad && (onNext != nil || onDone != nil) {
+                if keyboardType == .decimalPad && (onPrevious != nil || onNext != nil || onDone != nil) {
                     KeyboardToolbarTextField(
                         text: $value,
                         placeholder: placeholder,
+                        onPrevious: onPrevious,
                         onNext: onNext,
                         onDone: onDone,
+                        showPreviousButton: showPreviousButton,
                         showNextButton: showNextButton
                     )
                 } else {
@@ -233,8 +260,10 @@ struct CompactInputField: View {
     let suffix: String?
     let color: Color
     let keyboardType: UIKeyboardType
+    var onPrevious: (() -> Void)?
     var onNext: (() -> Void)?
     var onDone: (() -> Void)?
+    var showPreviousButton: Bool = true
     var showNextButton: Bool = true
     
     private var fieldId: String {
@@ -249,8 +278,10 @@ struct CompactInputField: View {
         suffix: String? = nil,
         color: Color = .blue,
         keyboardType: UIKeyboardType = .decimalPad,
+        onPrevious: (() -> Void)? = nil,
         onNext: (() -> Void)? = nil,
         onDone: (() -> Void)? = nil,
+        showPreviousButton: Bool = true,
         showNextButton: Bool = true
     ) {
         self.title = title
@@ -260,8 +291,10 @@ struct CompactInputField: View {
         self.suffix = suffix
         self.color = color
         self.keyboardType = keyboardType
+        self.onPrevious = onPrevious
         self.onNext = onNext
         self.onDone = onDone
+        self.showPreviousButton = showPreviousButton
         self.showNextButton = showNextButton
     }
     
@@ -282,12 +315,14 @@ struct CompactInputField: View {
                         .foregroundColor(color)
                 }
                 
-                if keyboardType == .decimalPad && (onNext != nil || onDone != nil) {
+                if keyboardType == .decimalPad && (onPrevious != nil || onNext != nil || onDone != nil) {
                     KeyboardToolbarTextField(
                         text: $value,
                         placeholder: placeholder,
+                        onPrevious: onPrevious,
                         onNext: onNext,
                         onDone: onDone,
+                        showPreviousButton: showPreviousButton,
                         showNextButton: showNextButton
                     )
                 } else {

@@ -7,8 +7,10 @@ struct DecimalPadInputField: UIViewRepresentable {
     let placeholder: String
     let suffix: String?
     let prefix: String?
+    var onPrevious: (() -> Void)?
     var onNext: (() -> Void)?
     var onDone: (() -> Void)?
+    var showPreviousButton: Bool = true
     var showNextButton: Bool = true
     var isCurrency: Bool = false
     
@@ -39,9 +41,17 @@ struct DecimalPadInputField: UIViewRepresentable {
         
         // Create toolbar
         let toolbar = UIToolbar()
+        toolbar.barStyle = .default
+        toolbar.isTranslucent = true
+        toolbar.tintColor = UIColor.systemBlue
         toolbar.sizeToFit()
         
         var items: [UIBarButtonItem] = []
+        
+        if showPreviousButton {
+            let previousButton = UIBarButtonItem(title: "Previous", style: .plain, target: context.coordinator, action: #selector(Coordinator.previousPressed))
+            items.append(previousButton)
+        }
         
         if showNextButton {
             let nextButton = UIBarButtonItem(title: "Next", style: .plain, target: context.coordinator, action: #selector(Coordinator.nextPressed))
@@ -54,7 +64,8 @@ struct DecimalPadInputField: UIViewRepresentable {
         let doneButton = UIBarButtonItem(title: "Done", style: .done, target: context.coordinator, action: #selector(Coordinator.donePressed))
         items.append(doneButton)
         
-        toolbar.items = items
+        toolbar.setItems(items, animated: false)
+        toolbar.isUserInteractionEnabled = true
         textField.inputAccessoryView = toolbar
         
         // Create prefix label if needed
@@ -132,6 +143,7 @@ struct DecimalPadInputField: UIViewRepresentable {
         
         // Store references for coordinator
         context.coordinator.textField = textField
+        context.coordinator.onPrevious = onPrevious
         context.coordinator.onNext = onNext
         context.coordinator.onDone = onDone
         context.coordinator.isCurrency = isCurrency
@@ -145,6 +157,7 @@ struct DecimalPadInputField: UIViewRepresentable {
                 textField.text = text
             }
         }
+        context.coordinator.onPrevious = onPrevious
         context.coordinator.onNext = onNext
         context.coordinator.onDone = onDone
         context.coordinator.isCurrency = isCurrency
@@ -157,6 +170,7 @@ struct DecimalPadInputField: UIViewRepresentable {
     class Coordinator: NSObject, UITextFieldDelegate {
         let parent: DecimalPadInputField
         var textField: UITextField?
+        var onPrevious: (() -> Void)?
         var onNext: (() -> Void)?
         var onDone: (() -> Void)?
         var isCurrency: Bool = false
@@ -276,6 +290,10 @@ struct DecimalPadInputField: UIViewRepresentable {
             }
             
             return false
+        }
+        
+        @objc func previousPressed() {
+            onPrevious?()
         }
         
         @objc func nextPressed() {

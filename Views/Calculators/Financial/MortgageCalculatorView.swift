@@ -110,7 +110,8 @@ struct MortgageCalculatorView: View {
                         keyboardType: .decimalPad,
                         helpText: "Total purchase price of the home",
                         onNext: { focusNextField(.homePrice) },
-                        onDone: { focusedField = nil }
+                        onDone: { focusedField = nil },
+                        showPreviousButton: false
                     )
                     .focused($focusedField, equals: .homePrice)
                     
@@ -124,6 +125,7 @@ struct MortgageCalculatorView: View {
                             color: .blue,
                             keyboardType: .decimalPad,
                             helpText: "Amount paid upfront (typically 10-20%)",
+                            onPrevious: { focusPreviousField(.downPayment) },
                             onNext: { focusNextField(.downPayment) },
                             onDone: { focusedField = nil }
                         )
@@ -154,6 +156,7 @@ struct MortgageCalculatorView: View {
                             suffix: "%",
                             color: .orange,
                             keyboardType: .decimalPad,
+                            onPrevious: { focusPreviousField(.interestRate) },
                             onNext: { focusNextField(.interestRate) },
                             onDone: { focusedField = nil }
                         )
@@ -166,6 +169,7 @@ struct MortgageCalculatorView: View {
                             suffix: "years",
                             color: .purple,
                             keyboardType: .decimalPad,
+                            onPrevious: { focusPreviousField(.loanTerm) },
                             onNext: { focusNextField(.loanTerm) },
                             onDone: { focusedField = nil }
                         )
@@ -187,6 +191,7 @@ struct MortgageCalculatorView: View {
                             prefix: "$",
                             color: .red,
                             keyboardType: .decimalPad,
+                            onPrevious: { focusPreviousField(.propertyTax) },
                             onNext: { focusNextField(.propertyTax) },
                             onDone: { focusedField = nil }
                         )
@@ -199,6 +204,7 @@ struct MortgageCalculatorView: View {
                             prefix: "$",
                             color: .green,
                             keyboardType: .decimalPad,
+                            onPrevious: { focusPreviousField(.homeInsurance) },
                             onNext: { focusNextField(.homeInsurance) },
                             onDone: { focusedField = nil }
                         )
@@ -213,6 +219,7 @@ struct MortgageCalculatorView: View {
                             prefix: "$",
                             color: .purple,
                             keyboardType: .decimalPad,
+                            onPrevious: { focusPreviousField(.hoa) },
                             onNext: { focusNextField(.hoa) },
                             onDone: { focusedField = nil }
                         )
@@ -226,6 +233,7 @@ struct MortgageCalculatorView: View {
                                 prefix: "$",
                                 color: .orange,
                                 keyboardType: .decimalPad,
+                                onPrevious: { focusPreviousField(.pmi) },
                                 onNext: { focusedField = nil },
                                 onDone: { focusedField = nil },
                                 showNextButton: false
@@ -334,6 +342,7 @@ struct MortgageCalculatorView: View {
                                         y: .value("Amount", item.interest)
                                     )
                                     .foregroundStyle(.red.opacity(0.7))
+
                                 }
                                 .frame(height: 200)
                                 .chartXAxisLabel("Year")
@@ -392,6 +401,16 @@ struct MortgageCalculatorView: View {
                 focusedField = allFields[nextIndex]
             } else {
                 focusedField = nil
+            }
+        }
+    }
+    
+    private func focusPreviousField(_ currentField: MortgageField) {
+        let allFields = MortgageField.allCases
+        if let currentIndex = allFields.firstIndex(of: currentField) {
+            let previousIndex = currentIndex - 1
+            if previousIndex >= 0 {
+                focusedField = allFields[previousIndex]
             }
         }
     }
