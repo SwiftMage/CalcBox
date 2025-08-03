@@ -1,5 +1,6 @@
 import SwiftUI
 import Charts
+import Combine
 
 struct MortgageCalculatorView: View {
     @State private var homePrice = ""
@@ -15,6 +16,7 @@ struct MortgageCalculatorView: View {
     @State private var amortizationSchedule: [AmortizationItem] = []
     @State private var showInfo = false
     @FocusState private var focusedField: MortgageField?
+    @State private var keyboardHeight: CGFloat = 0
     
     enum MortgageField: CaseIterable {
         case homePrice, downPayment, interestRate, loanTerm, propertyTax, homeInsurance, hoa, pmi
@@ -79,12 +81,12 @@ struct MortgageCalculatorView: View {
     }
     
     var body: some View {
-        CalculatorView(
-            title: "Mortgage Calculator",
-            description: "Calculate your monthly mortgage payment"
-        ) {
-            ScrollViewReader { proxy in
-            VStack(spacing: 24) {
+        ScrollViewReader { proxy in
+            CalculatorView(
+                title: "Mortgage Calculator",
+                description: "Calculate your monthly mortgage payment"
+            ) {
+                VStack(spacing: 24) {
                 // Quick Action Buttons
                 QuickActionButtonRow(
                     onExample: { fillDemoDataAndCalculate() },
@@ -114,6 +116,7 @@ struct MortgageCalculatorView: View {
                         showPreviousButton: false
                     )
                     .focused($focusedField, equals: .homePrice)
+                    .id(MortgageField.homePrice)
                     
                     VStack(spacing: 16) {
                         ModernInputField(
@@ -130,6 +133,7 @@ struct MortgageCalculatorView: View {
                             onDone: { focusedField = nil }
                         )
                         .focused($focusedField, equals: .downPayment)
+                        .id(MortgageField.downPayment)
                         
                         if !downPayment.isEmpty && !homePrice.isEmpty {
                             HStack {
@@ -161,6 +165,7 @@ struct MortgageCalculatorView: View {
                             onDone: { focusedField = nil }
                         )
                         .focused($focusedField, equals: .interestRate)
+                        .id(MortgageField.interestRate)
                         
                         CompactInputField(
                             title: "Loan Term",
@@ -174,6 +179,7 @@ struct MortgageCalculatorView: View {
                             onDone: { focusedField = nil }
                         )
                         .focused($focusedField, equals: .loanTerm)
+                        .id(MortgageField.loanTerm)
                     }
                 }
                 
@@ -196,6 +202,7 @@ struct MortgageCalculatorView: View {
                             onDone: { focusedField = nil }
                         )
                         .focused($focusedField, equals: .propertyTax)
+                        .id(MortgageField.propertyTax)
                         
                         CompactInputField(
                             title: "Home Insurance",
@@ -209,6 +216,7 @@ struct MortgageCalculatorView: View {
                             onDone: { focusedField = nil }
                         )
                         .focused($focusedField, equals: .homeInsurance)
+                        .id(MortgageField.homeInsurance)
                     }
                     
                     HStack(spacing: 16) {
@@ -224,6 +232,7 @@ struct MortgageCalculatorView: View {
                             onDone: { focusedField = nil }
                         )
                         .focused($focusedField, equals: .hoa)
+                        .id(MortgageField.hoa)
                         
                         if downPaymentPercentage < 20 {
                             CompactInputField(
@@ -239,6 +248,7 @@ struct MortgageCalculatorView: View {
                                 showNextButton: false
                             )
                             .focused($focusedField, equals: .pmi)
+                            .id(MortgageField.pmi)
                         } else {
                             VStack(alignment: .leading, spacing: 8) {
                                 Text("PMI")
@@ -355,7 +365,27 @@ struct MortgageCalculatorView: View {
                     }
                     .transition(.move(edge: .bottom).combined(with: .opacity))
                 }
+                }
+                .padding(.bottom, keyboardHeight)
             }
+            .onChange(of: focusedField) { field in
+                if let field = field {
+                    withAnimation(.easeInOut(duration: 0.3)) {
+                        proxy.scrollTo(field, anchor: .center)
+                    }
+                }
+            }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillShowNotification)) { notification in
+            if let keyboardFrame = notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect {
+                withAnimation(.easeInOut(duration: 0.3)) {
+                    keyboardHeight = keyboardFrame.height
+                }
+            }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillHideNotification)) { _ in
+            withAnimation(.easeInOut(duration: 0.3)) {
+                keyboardHeight = 0
             }
         }
         .sheet(isPresented: $showInfo) {
