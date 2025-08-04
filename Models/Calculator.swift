@@ -180,6 +180,13 @@ extension Calculator {
             icon: "heart.text.square.fill",
             destination: AnyView(PregnancyCalculatorView())
         ),
+        Calculator(
+            name: "Sleep Debt Calculator",
+            description: "Track sleep deficit and plan recovery",
+            category: .health,
+            icon: "bed.double.fill",
+            destination: AnyView(SleepDebtCalculatorView())
+        ),
         
         // Utilities
         Calculator(
