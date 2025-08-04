@@ -794,21 +794,13 @@ struct CalculatorButton: View {
     private var buttonBackground: some View {
         switch style {
         case .primary:
-            if let category = category {
-                GradientStyles.ModernButtonGradient(
-                    category: category,
-                    isPressed: isPressed,
-                    isDisabled: isDisabled
-                )
-                .categoryShadow(category, radius: isPressed ? 4 : 8)
-            } else {
-                LinearGradient(
-                    colors: [Color.blue, Color.blue.opacity(0.8)],
-                    startPoint: .top,
-                    endPoint: .bottom
-                )
-                .shadow(color: .blue.opacity(0.3), radius: isPressed ? 4 : 8)
-            }
+            // Always use blue gradient for primary calculate buttons
+            LinearGradient(
+                colors: [Color.blue, Color.blue.opacity(0.8)],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+            .shadow(color: .blue.opacity(0.3), radius: isPressed ? 4 : 8)
             
         case .secondary:
             CalcBoxColors.Surface.elevated
