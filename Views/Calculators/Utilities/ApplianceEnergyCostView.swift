@@ -11,6 +11,12 @@ struct ApplianceEnergyCostView: View {
     @State private var showResults = false
     @State private var isDemoActive = false
     @State private var showInfo = false
+    @FocusState private var focusedField: ApplianceField?
+    @State private var keyboardHeight: CGFloat = 0
+    
+    enum ApplianceField: CaseIterable {
+        case wattage, hoursPerDay, standbyWattage, electricityRate
+    }
     
     struct Appliance: Identifiable {
         let id = UUID()
@@ -300,7 +306,47 @@ struct ApplianceEnergyCostView: View {
         }
     }
     
-    private func fillDemoData() {
+    private func focusNextField(_ currentField: ApplianceField) {
+        let allFields = ApplianceField.allCases
+        if let currentIndex = allFields.firstIndex(of: currentField) {
+            let nextIndex = currentIndex + 1
+            if nextIndex < allFields.count {
+                // Skip standbyWattage if includeStandby is false
+                let nextField = allFields[nextIndex]
+                if nextField == .standbyWattage && !includeStandby {
+                    if nextIndex + 1 < allFields.count {
+                        focusedField = allFields[nextIndex + 1]
+                    } else {
+                        focusedField = nil
+                    }
+                } else {
+                    focusedField = nextField
+                }
+            } else {
+                focusedField = nil
+            }
+        }
+    }
+    
+    private func focusPreviousField(_ currentField: ApplianceField) {
+        let allFields = ApplianceField.allCases
+        if let currentIndex = allFields.firstIndex(of: currentField) {
+            let previousIndex = currentIndex - 1
+            if previousIndex >= 0 {
+                // Skip standbyWattage if includeStandby is false
+                let previousField = allFields[previousIndex]
+                if previousField == .standbyWattage && !includeStandby {
+                    if previousIndex - 1 >= 0 {
+                        focusedField = allFields[previousIndex - 1]
+                    }
+                } else {
+                    focusedField = previousField
+                }
+            }
+        }
+    }
+    
+    private func fillDemoDataAndCalculate() {
         // Use the refrigerator as demo appliance
         let refrigerator = commonAppliances.first { $0.name == "Refrigerator" }
         selectedAppliance = refrigerator
@@ -309,28 +355,19 @@ struct ApplianceEnergyCostView: View {
         electricityRate = "0.13"
         standbyWattage = "5"
         includeStandby = true
-        isDemoActive = true
-    }
-    
-    private func fillDemoDataAndCalculate() {
-        fillDemoData()
+        
         withAnimation {
             showResults = true
         }
     }
     
     private func clearAllData() {
-        clearDemoData()
-    }
-    
-    private func clearDemoData() {
         selectedAppliance = nil
         wattage = ""
         hoursPerDay = ""
         electricityRate = ""
         standbyWattage = ""
         includeStandby = false
-        isDemoActive = false
         
         withAnimation {
             showResults = false

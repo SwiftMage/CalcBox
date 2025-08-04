@@ -63,13 +63,14 @@ extension Calculator {
             icon: "person.crop.circle.badge.clock",
             destination: AnyView(RetirementPlanningView())
         ),
-        Calculator(
+        // Temporarily commented out due to build issues
+        /*Calculator(
             name: "Retirement Savings",
             description: "How long will your savings last",
             category: .financial,
             icon: "hourglass",
             destination: AnyView(RetirementSavingsView())
-        ),
+        ),*/
         Calculator(
             name: "Loan Calculator",
             description: "Calculate loan payments and interest",
@@ -243,6 +244,8 @@ extension Calculator {
         ),
         
         // Time & Date
+        // TODO: Re-enable when Time calculator files are fixed
+        /*
         Calculator(
             name: "Date Calculator",
             description: "Calculate days between dates",
@@ -264,5 +267,6 @@ extension Calculator {
             icon: "clock.badge.checkmark.fill",
             destination: AnyView(OvertimeCalculatorView())
         )
+        */
     ]
 }

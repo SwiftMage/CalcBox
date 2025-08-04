@@ -343,6 +343,63 @@ struct DriveToWorkView: View {
     }
 }
 
+struct DriveToWorkInfoSheet: View {
+    @Environment(\.dismiss) private var dismiss
+    
+    var body: some View {
+        NavigationView {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 20) {
+                    Text("About Drive to Work Calculator")
+                        .font(.title)
+                        .fontWeight(.bold)
+                    
+                    VStack(alignment: .leading, spacing: 16) {
+                        InfoSection(
+                            title: "What it calculates",
+                            content: "This calculator compares the daily, weekly, monthly, and yearly costs of commuting to work by car, comparing gas vehicles vs electric vehicles."
+                        )
+                        
+                        InfoSection(
+                            title: "Gas Vehicle Calculations",
+                            content: """
+                            • Daily fuel consumption = Daily miles ÷ MPG
+                            • Daily cost = Gallons × Gas price
+                            • CO₂ emissions: ~19.6 lbs per gallon
+                            """
+                        )
+                        
+                        InfoSection(
+                            title: "Electric Vehicle Calculations",
+                            content: """
+                            • Daily energy = (Miles ÷ Efficiency) ÷ Charging efficiency
+                            • Daily cost = kWh × Electricity rate
+                            • CO₂ emissions: ~0.85 lbs per kWh (US grid average)
+                            """
+                        )
+                        
+                        InfoSection(
+                            title: "Tips for Accuracy",
+                            content: """
+                            • Use your actual commute distance (round-trip)
+                            • Check your vehicle's real-world efficiency
+                            • Include local gas prices and electricity rates
+                            • Consider seasonal variations in efficiency
+                            """
+                        )
+                    }
+                    
+                    Spacer()
+                }
+                .padding()
+            }
+            .navigationTitle("Drive to Work Help")
+            .navigationBarTitleDisplayMode(.inline)
+            .navigationBarItems(trailing: Button("Done") { dismiss() })
+        }
+    }
+}
+
 struct ComparisonTip: View {
     let gasCost: Double
     let estimatedEVCost: Double

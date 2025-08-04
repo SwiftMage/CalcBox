@@ -11,6 +11,8 @@ struct BMICalculatorView: View {
     @State private var gender = Gender.male
     @State private var isDemoActive = false
     @State private var showInfo = false
+    @FocusState private var focusedField: BMIField?
+    @State private var keyboardHeight: CGFloat = 0
     
     enum UnitSystem: String, CaseIterable {
         case imperial = "Imperial"
@@ -21,6 +23,10 @@ struct BMICalculatorView: View {
         case male = "Male"
         case female = "Female"
         case other = "Other"
+    }
+    
+    enum BMIField: CaseIterable {
+        case weight, heightFeet, heightInches, heightCm, age
     }
     
     var bmi: Double {
@@ -106,112 +112,177 @@ struct BMICalculatorView: View {
     }
     
     var body: some View {
-        CalculatorView(
-            title: "Body Mass Index",
-            description: "Calculate BMI and assess health risks"
-        ) {
-            VStack(spacing: 20) {
-                // Quick Action Buttons
-                QuickActionButtonRow(
-                    onExample: { fillDemoDataAndCalculate() },
-                    onClear: { clearAllData() },
-                    onInfo: { showInfo = true },
-                    onShare: { shareResults() },
-                    showShare: showResults
-                )
+        ScrollViewReader { proxy in
+            CalculatorView(
+                title: "Body Mass Index",
+                description: "Calculate BMI and assess health risks"
+            ) {
+                VStack(spacing: 24) {
+                    // Quick Action Buttons
+                    QuickActionButtonRow(
+                        onExample: { fillDemoDataAndCalculate() },
+                        onClear: { clearAllData() },
+                        onInfo: { showInfo = true },
+                        onShare: { shareResults() },
+                        showShare: showResults
+                    )
                 
-                // Unit System Selection
-                SegmentedPicker(
-                    title: "Unit System",
-                    selection: $unitSystem,
-                    options: UnitSystem.allCases.map { ($0, $0.rawValue) }
-                )
+                    // Unit System Selection
+                    SegmentedPicker(
+                        title: "Unit System",
+                        selection: $unitSystem,
+                        options: UnitSystem.allCases.map { ($0, $0.rawValue) }
+                    )
                 
-                // Input Fields
-                VStack(spacing: 16) {
-                    if unitSystem == .imperial {
-                        CalculatorInputField(
-                            title: "Weight",
-                            value: $weight,
-                            placeholder: "165",
-                            suffix: "lbs"
-                        )
-                        
-                        HStack(spacing: 16) {
-                            CalculatorInputField(
-                                title: "Height (Feet)",
-                                value: $heightFeet,
-                                placeholder: "5",
-                                suffix: "ft"
+                    // Input Fields
+                    GroupedInputFields(
+                        title: "Physical Measurements",
+                        icon: "figure.arms.open",
+                        color: .blue
+                    ) {
+                        if unitSystem == .imperial {
+                            ModernInputField(
+                                title: "Weight",
+                                value: $weight,
+                                placeholder: "165",
+                                suffix: "lbs",
+                                icon: "scalemass.fill",
+                                color: .green,
+                                keyboardType: .decimalPad,
+                                helpText: "Your current weight in pounds",
+                                onNext: { focusNextField(.weight) },
+                                onDone: { focusedField = nil },
+                                showPreviousButton: false
                             )
+                            .focused($focusedField, equals: .weight)
+                            .id(BMIField.weight)
                             
-                            CalculatorInputField(
-                                title: "Height (Inches)",
-                                value: $heightInches,
-                                placeholder: "9",
-                                suffix: "in"
-                            )
-                        }
-                    } else {
-                        CalculatorInputField(
-                            title: "Weight",
-                            value: $weight,
-                            placeholder: "75",
-                            suffix: "kg"
-                        )
-                        
-                        CalculatorInputField(
-                            title: "Height",
-                            value: $heightCm,
-                            placeholder: "175",
-                            suffix: "cm"
-                        )
-                    }
-                    
-                    // Optional fields
-                    HStack(spacing: 16) {
-                        CalculatorInputField(
-                            title: "Age (optional)",
-                            value: $age,
-                            placeholder: "30",
-                            suffix: "years"
-                        )
-                        
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text("Gender (optional)")
-                                .font(.subheadline)
-                                .foregroundColor(.secondary)
-                            
-                            Picker("Gender", selection: $gender) {
-                                ForEach(Gender.allCases, id: \.self) { gender in
-                                    Text(gender.rawValue).tag(gender)
-                                }
+                            HStack(spacing: 16) {
+                                CompactInputField(
+                                    title: "Height (Feet)",
+                                    value: $heightFeet,
+                                    placeholder: "5",
+                                    suffix: "ft",
+                                    color: .orange,
+                                    keyboardType: .decimalPad,
+                                    onPrevious: { focusPreviousField(.heightFeet) },
+                                    onNext: { focusNextField(.heightFeet) },
+                                    onDone: { focusedField = nil }
+                                )
+                                .focused($focusedField, equals: .heightFeet)
+                                .id(BMIField.heightFeet)
+                                
+                                CompactInputField(
+                                    title: "Height (Inches)",
+                                    value: $heightInches,
+                                    placeholder: "9",
+                                    suffix: "in",
+                                    color: .purple,
+                                    keyboardType: .decimalPad,
+                                    onPrevious: { focusPreviousField(.heightInches) },
+                                    onNext: { focusNextField(.heightInches) },
+                                    onDone: { focusedField = nil }
+                                )
+                                .focused($focusedField, equals: .heightInches)
+                                .id(BMIField.heightInches)
                             }
-                            .pickerStyle(MenuPickerStyle())
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                            .background(Color(.systemGray6))
-                            .clipShape(RoundedRectangle(cornerRadius: 12))
+                        } else {
+                            ModernInputField(
+                                title: "Weight",
+                                value: $weight,
+                                placeholder: "75",
+                                suffix: "kg",
+                                icon: "scalemass.fill",
+                                color: .green,
+                                keyboardType: .decimalPad,
+                                helpText: "Your current weight in kilograms",
+                                onNext: { focusNextField(.weight) },
+                                onDone: { focusedField = nil },
+                                showPreviousButton: false
+                            )
+                            .focused($focusedField, equals: .weight)
+                            .id(BMIField.weight)
+                            
+                            ModernInputField(
+                                title: "Height",
+                                value: $heightCm,
+                                placeholder: "175",
+                                suffix: "cm",
+                                icon: "ruler.fill",
+                                color: .orange,
+                                keyboardType: .decimalPad,
+                                helpText: "Your height in centimeters",
+                                onPrevious: { focusPreviousField(.heightCm) },
+                                onNext: { focusNextField(.heightCm) },
+                                onDone: { focusedField = nil }
+                            )
+                            .focused($focusedField, equals: .heightCm)
+                            .id(BMIField.heightCm)
+                        }
+                        
+                        // Optional fields
+                        HStack(spacing: 16) {
+                            CompactInputField(
+                                title: "Age (optional)",
+                                value: $age,
+                                placeholder: "30",
+                                suffix: "years",
+                                color: .pink,
+                                keyboardType: .decimalPad,
+                                onPrevious: { focusPreviousField(.age) },
+                                onNext: { focusedField = nil },
+                                onDone: { focusedField = nil },
+                                showNextButton: false
+                            )
+                            .focused($focusedField, equals: .age)
+                            .id(BMIField.age)
+                            
+                            VStack(alignment: .leading, spacing: 8) {
+                                Text("Gender (optional)")
+                                    .font(.caption)
+                                    .fontWeight(.medium)
+                                    .foregroundColor(.secondary)
+                                    .textCase(.uppercase)
+                                    .tracking(0.5)
+                                
+                                Picker("Gender", selection: $gender) {
+                                    ForEach(Gender.allCases, id: \.self) { gender in
+                                        Text(gender.rawValue).tag(gender)
+                                    }
+                                }
+                                .pickerStyle(MenuPickerStyle())
+                                .frame(maxWidth: .infinity)
+                                .padding(.horizontal, 16)
+                                .padding(.vertical, 12)
+                                .background(Color(.systemGray6))
+                                .clipShape(RoundedRectangle(cornerRadius: 12))
+                            }
                         }
                     }
-                }
                 
-                // Calculate Button
-                CalculatorButton(title: "Calculate BMI") {
-                    withAnimation {
-                        showResults = true
+                    // Calculate Button
+                    CalculatorButton(title: "Calculate BMI") {
+                        withAnimation {
+                            showResults = true
+                        }
+                        // Scroll to results after animation
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                            withAnimation(.easeInOut(duration: 0.5)) {
+                                proxy.scrollTo("results", anchor: .top)
+                            }
+                        }
                     }
-                }
                 
-                // Results
-                if showResults && bmi > 0 {
-                    VStack(spacing: 20) {
-                        Divider()
-                        
-                        Text("Your BMI Results")
-                            .font(.title2)
-                            .fontWeight(.semibold)
-                            .frame(maxWidth: .infinity, alignment: .leading)
+                    // Results
+                    if showResults && bmi > 0 {
+                        VStack(spacing: 20) {
+                            Divider()
+                                .id("results")
+                            
+                            Text("Your BMI Results")
+                                .font(.title2)
+                                .fontWeight(.semibold)
+                                .frame(maxWidth: .infinity, alignment: .leading)
                         
                         // BMI Score Card
                         VStack(spacing: 16) {
@@ -267,14 +338,35 @@ struct BMICalculatorView: View {
                         .background(Color(.systemGray6))
                         .clipShape(RoundedRectangle(cornerRadius: 12))
                         
-                        // Health Risks
-                        HealthRisksView(bmi: bmi)
-                        
-                        // Recommendations
-                        RecommendationsView(bmi: bmi, age: age, gender: gender)
+                            // Health Risks
+                            HealthRisksView(bmi: bmi)
+                            
+                            // Recommendations
+                            RecommendationsView(bmi: bmi, age: age, gender: gender)
+                        }
+                        .transition(.move(edge: .bottom).combined(with: .opacity))
                     }
-                    .transition(.move(edge: .bottom).combined(with: .opacity))
                 }
+                .padding(.bottom, keyboardHeight)
+            }
+            .onChange(of: focusedField) { field in
+                if let field = field {
+                    withAnimation(.easeInOut(duration: 0.3)) {
+                        proxy.scrollTo(field, anchor: .center)
+                    }
+                }
+            }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillShowNotification)) { notification in
+            if let keyboardFrame = notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect {
+                withAnimation(.easeInOut(duration: 0.3)) {
+                    keyboardHeight = keyboardFrame.height
+                }
+            }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillHideNotification)) { _ in
+            withAnimation(.easeInOut(duration: 0.3)) {
+                keyboardHeight = 0
             }
         }
         .sheet(isPresented: $showInfo) {
@@ -282,7 +374,43 @@ struct BMICalculatorView: View {
         }
     }
     
-    private func fillDemoData() {
+    private func focusNextField(_ currentField: BMIField) {
+        let allFields = BMIField.allCases
+        if let currentIndex = allFields.firstIndex(of: currentField) {
+            let nextIndex = currentIndex + 1
+            if nextIndex < allFields.count {
+                // Skip height fields based on unit system
+                let nextField = allFields[nextIndex]
+                if (unitSystem == .imperial && nextField == .heightCm) || 
+                   (unitSystem == .metric && (nextField == .heightFeet || nextField == .heightInches)) {
+                    focusNextField(nextField)
+                } else {
+                    focusedField = nextField
+                }
+            } else {
+                focusedField = nil
+            }
+        }
+    }
+    
+    private func focusPreviousField(_ currentField: BMIField) {
+        let allFields = BMIField.allCases
+        if let currentIndex = allFields.firstIndex(of: currentField) {
+            let previousIndex = currentIndex - 1
+            if previousIndex >= 0 {
+                // Skip height fields based on unit system
+                let previousField = allFields[previousIndex]
+                if (unitSystem == .imperial && previousField == .heightCm) || 
+                   (unitSystem == .metric && (previousField == .heightFeet || previousField == .heightInches)) {
+                    focusPreviousField(previousField)
+                } else {
+                    focusedField = previousField
+                }
+            }
+        }
+    }
+    
+    private func fillDemoDataAndCalculate() {
         if unitSystem == .imperial {
             weight = "165"
             heightFeet = "5"
@@ -293,29 +421,19 @@ struct BMICalculatorView: View {
         }
         age = "30"
         gender = .male
-        isDemoActive = true
-    }
-    
-    private func fillDemoDataAndCalculate() {
-        fillDemoData()
+        
         withAnimation {
             showResults = true
         }
     }
     
     private func clearAllData() {
-        clearDemoData()
-    }
-    
-    private func clearDemoData() {
         weight = ""
         heightFeet = ""
         heightInches = ""
         heightCm = ""
         age = ""
         gender = .male
-        unitSystem = .imperial
-        isDemoActive = false
         
         withAnimation {
             showResults = false
