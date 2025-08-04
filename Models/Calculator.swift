@@ -140,7 +140,7 @@ extension Calculator {
             name: "Lease vs Buy Car",
             description: "Compare car leasing vs buying costs",
             category: .travel,
-            icon: "car.2.circle.fill",
+            icon: "car.fill",
             destination: AnyView(LeaseVsBuyView())
         ),
         
@@ -200,7 +200,7 @@ extension Calculator {
             name: "Appliance Energy Cost",
             description: "Calculate electricity costs for appliances",
             category: .utilities,
-            icon: "plug.fill",
+            icon: "bolt.fill",
             destination: AnyView(ApplianceEnergyCostView())
         ),
         Calculator(
