@@ -99,6 +99,13 @@ extension Calculator {
             icon: "creditcard.trianglebadge.exclamationmark",
             destination: AnyView(DebtPayoffView())
         ),
+        Calculator(
+            name: "Emergency Fund Calculator",
+            description: "Plan and track your emergency savings",
+            category: .financial,
+            icon: "shield.lefthalf.filled.badge.checkmark",
+            destination: AnyView(EmergencyFundView())
+        ),
         
         // Travel
         Calculator(
@@ -128,6 +135,13 @@ extension Calculator {
             category: .travel,
             icon: "timer",
             destination: AnyView(TripTimeView())
+        ),
+        Calculator(
+            name: "Lease vs Buy Car",
+            description: "Compare car leasing vs buying costs",
+            category: .travel,
+            icon: "car.2.circle.fill",
+            destination: AnyView(LeaseVsBuyView())
         ),
         
         // Health
@@ -195,6 +209,13 @@ extension Calculator {
             category: .utilities,
             icon: "building.2.fill",
             destination: AnyView(RentingCostView())
+        ),
+        Calculator(
+            name: "Rent vs Buy Home",
+            description: "Compare renting vs buying a home",
+            category: .utilities,
+            icon: "house.and.flag.fill",
+            destination: AnyView(RentVsBuyHomeView())
         ),
         
         // Education
