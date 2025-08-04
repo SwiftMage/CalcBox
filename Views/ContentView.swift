@@ -25,16 +25,16 @@ struct ContentView: View {
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(spacing: 20) {
+                VStack(spacing: 24) {
                     // Category Filter
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack(spacing: 12) {
                             CategoryFilterChip(
                                 title: "All",
                                 isSelected: selectedCategory == nil,
-                                color: .gray
+                                color: CalcBoxColors.CategoryColors.financial.primary
                             ) {
-                                withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                                withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
                                     selectedCategory = nil
                                 }
                             }
@@ -43,15 +43,16 @@ struct ContentView: View {
                                 CategoryFilterChip(
                                     title: category.rawValue,
                                     isSelected: selectedCategory == category,
-                                    color: category.color
+                                    color: category.colorScheme.primary,
+                                    gradient: category.gradient
                                 ) {
-                                    withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                                    withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
                                         selectedCategory = category
                                     }
                                 }
                             }
                         }
-                        .padding(.horizontal)
+                        .padding(.horizontal, 20)
                     }
                     
                     // Calculator List
@@ -59,7 +60,7 @@ struct ContentView: View {
                         EmptyStateView(searchText: searchText)
                             .padding(.top, 50)
                     } else {
-                        LazyVStack(spacing: 16) {
+                        LazyVStack(spacing: 20) {
                             ForEach(CalculatorCategory.allCases, id: \.self) { category in
                                 if let calculators = groupedCalculators[category], !calculators.isEmpty {
                                     CalculatorSection(
@@ -69,14 +70,19 @@ struct ContentView: View {
                                 }
                             }
                         }
-                        .padding(.horizontal)
+                        .padding(.horizontal, 20)
                     }
                 }
-                .padding(.bottom, 20)
+                .padding(.vertical, 20)
             }
-            .background(Color(.systemGroupedBackground))
+            .background {
+                // Modern gradient background
+                CalcBoxColors.Backgrounds.meshLight
+                    .ignoresSafeArea()
+            }
             .navigationTitle("CalcBox")
-            .searchable(text: $searchText, prompt: "Search calculators")
+            .navigationBarTitleDisplayMode(.large)
+            .searchable(text: $searchText, prompt: "Search calculators...")
         }
     }
 }
@@ -85,19 +91,79 @@ struct CategoryFilterChip: View {
     let title: String
     let isSelected: Bool
     let color: Color
+    let gradient: LinearGradient?
     let action: () -> Void
+    @State private var isPressed = false
+    
+    init(
+        title: String,
+        isSelected: Bool,
+        color: Color,
+        gradient: LinearGradient? = nil,
+        action: @escaping () -> Void
+    ) {
+        self.title = title
+        self.isSelected = isSelected
+        self.color = color
+        self.gradient = gradient
+        self.action = action
+    }
     
     var body: some View {
-        Button(action: action) {
+        Button(action: {
+            // Haptic feedback
+            let impactFeedback = UIImpactFeedbackGenerator(style: .light)
+            impactFeedback.impactOccurred()
+            
+            action()
+        }) {
             Text(title)
                 .font(.subheadline)
-                .fontWeight(.medium)
-                .padding(.horizontal, 16)
-                .padding(.vertical, 8)
-                .background(isSelected ? color : Color(.systemGray5))
-                .foregroundColor(isSelected ? .white : .primary)
+                .fontWeight(.semibold)
+                .padding(.horizontal, 20)
+                .padding(.vertical, 12)
+                .foregroundColor(isSelected ? .white : CalcBoxColors.Text.primary)
+                .background {
+                    if isSelected {
+                        if let gradient = gradient {
+                            gradient
+                        } else {
+                            color
+                        }
+                    } else {
+                        CalcBoxColors.Surface.elevated
+                            .overlay(
+                                color.opacity(0.1)
+                            )
+                    }
+                }
                 .clipShape(Capsule())
+                .overlay(
+                    Capsule()
+                        .stroke(
+                            isSelected ? Color.clear : color.opacity(0.3),
+                            lineWidth: 1
+                        )
+                )
+                .scaleEffect(isPressed ? 0.95 : 1.0)
+                .shadow(
+                    color: isSelected ? color.opacity(0.3) : Color.clear,
+                    radius: isSelected ? 6 : 0,
+                    x: 0,
+                    y: 2
+                )
+                .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isSelected)
+                .animation(.spring(response: 0.2, dampingFraction: 0.8), value: isPressed)
         }
+        .buttonStyle(PlainButtonStyle())
+        .onLongPressGesture(
+            minimumDuration: 0.0,
+            maximumDistance: .infinity,
+            pressing: { pressing in
+                isPressed = pressing
+            },
+            perform: {}
+        )
     }
 }
 

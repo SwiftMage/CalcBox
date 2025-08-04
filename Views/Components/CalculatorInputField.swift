@@ -621,24 +621,29 @@ struct CalculatorResultCard: View {
     let value: String
     let subtitle: String?
     let color: Color
+    let category: CalcBoxColors.CategoryColors?
+    @State private var animate = false
     
     init(
         title: String,
         value: String,
         subtitle: String? = nil,
-        color: Color = .blue
+        color: Color = .blue,
+        category: CalcBoxColors.CategoryColors? = nil
     ) {
         self.title = title
         self.value = value
         self.subtitle = subtitle
         self.color = color
+        self.category = category
     }
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 12) {
             Text(title)
                 .font(.subheadline)
-                .foregroundColor(.secondary)
+                .fontWeight(.medium)
+                .foregroundColor(CalcBoxColors.Text.secondary)
                 .lineLimit(1)
                 .minimumScaleFactor(0.8)
             
@@ -648,19 +653,48 @@ struct CalculatorResultCard: View {
                 .foregroundColor(color)
                 .lineLimit(1)
                 .minimumScaleFactor(0.7)
+                .scaleEffect(animate ? 1.02 : 1.0)
+                .animation(.spring(response: 0.4, dampingFraction: 0.6), value: animate)
             
             if let subtitle = subtitle {
                 Text(subtitle)
                     .font(.caption)
-                    .foregroundColor(.secondary)
+                    .foregroundColor(CalcBoxColors.Text.tertiary)
                     .lineLimit(2)
                     .minimumScaleFactor(0.9)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding()
-        .background(color.opacity(0.1))
-        .clipShape(RoundedRectangle(cornerRadius: 16))
+        .padding(20)
+        .background {
+            ZStack {
+                // Base background
+                if let category = category {
+                    CalcBoxColors.Gradients.resultCard(category)
+                } else {
+                    color.opacity(0.1)
+                }
+                
+                // Glass morphism overlay
+                if let category = category {
+                    GradientStyles.GlassCardOverlay(category: category, intensity: 0.6)
+                }
+            }
+        }
+        .clipShape(RoundedRectangle(cornerRadius: 20))
+        .overlay(
+            RoundedRectangle(cornerRadius: 20)
+                .stroke(
+                    category?.primary.opacity(0.2) ?? color.opacity(0.2),
+                    lineWidth: 1
+                )
+        )
+        .layeredShadow()
+        .onAppear {
+            withAnimation(.spring(response: 0.6, dampingFraction: 0.8).delay(0.1)) {
+                animate = true
+            }
+        }
     }
 }
 
@@ -668,22 +702,20 @@ struct CalculatorButton: View {
     let title: String
     let action: () -> Void
     let style: ButtonStyle
+    let category: CalcBoxColors.CategoryColors?
+    let isDisabled: Bool
+    @State private var isPressed = false
     
     enum ButtonStyle {
         case primary
         case secondary
-        
-        var backgroundColor: Color {
-            switch self {
-            case .primary: return .blue
-            case .secondary: return Color(.systemGray5)
-            }
-        }
+        case glass
         
         var foregroundColor: Color {
             switch self {
             case .primary: return .white
-            case .secondary: return .primary
+            case .secondary: return CalcBoxColors.Text.primary
+            case .glass: return CalcBoxColors.Text.primary
             }
         }
     }
@@ -691,27 +723,118 @@ struct CalculatorButton: View {
     init(
         title: String,
         style: ButtonStyle = .primary,
+        category: CalcBoxColors.CategoryColors? = nil,
+        isDisabled: Bool = false,
         action: @escaping () -> Void
     ) {
         self.title = title
         self.style = style
+        self.category = category
+        self.isDisabled = isDisabled
         self.action = action
     }
     
     var body: some View {
         Button(action: {
+            guard !isDisabled else { return }
+            
+            // Haptic feedback
+            let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
+            impactFeedback.impactOccurred()
+            
             // Dismiss keyboard first
             UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
-            // Execute the action
-            action()
+            
+            // Execute the action with slight delay for animation
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                action()
+            }
         }) {
-            Text(title)
-                .font(.headline)
-                .foregroundColor(style.foregroundColor)
-                .frame(maxWidth: .infinity)
-                .padding()
-                .background(style.backgroundColor)
-                .clipShape(RoundedRectangle(cornerRadius: 12))
+            HStack(spacing: 8) {
+                if style == .primary {
+                    Image(systemName: "sparkles")
+                        .font(.subheadline)
+                        .opacity(0.8)
+                }
+                
+                Text(title)
+                    .font(.headline)
+                    .fontWeight(.semibold)
+                
+                if isPressed {
+                    Image(systemName: "checkmark.circle.fill")
+                        .font(.subheadline)
+                        .transition(.scale.combined(with: .opacity))
+                }
+            }
+            .foregroundColor(isDisabled ? Color.gray : style.foregroundColor)
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 16)
+            .padding(.horizontal, 20)
+            .background {
+                buttonBackground
+            }
+            .clipShape(RoundedRectangle(cornerRadius: 16))
+            .scaleEffect(isPressed ? 0.96 : 1.0)
+            .animation(.spring(response: 0.3, dampingFraction: 0.6), value: isPressed)
+        }
+        .buttonStyle(PlainButtonStyle())
+        .disabled(isDisabled)
+        .onLongPressGesture(
+            minimumDuration: 0.0,
+            maximumDistance: .infinity,
+            pressing: { pressing in
+                isPressed = pressing
+            },
+            perform: {}
+        )
+    }
+    
+    @ViewBuilder
+    private var buttonBackground: some View {
+        switch style {
+        case .primary:
+            if let category = category {
+                GradientStyles.ModernButtonGradient(
+                    category: category,
+                    isPressed: isPressed,
+                    isDisabled: isDisabled
+                )
+                .categoryShadow(category, radius: isPressed ? 4 : 8)
+            } else {
+                LinearGradient(
+                    colors: [Color.blue, Color.blue.opacity(0.8)],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+                .shadow(color: .blue.opacity(0.3), radius: isPressed ? 4 : 8)
+            }
+            
+        case .secondary:
+            CalcBoxColors.Surface.elevated
+                .overlay(
+                    RoundedRectangle(cornerRadius: 16)
+                        .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+                )
+                .layeredShadow()
+            
+        case .glass:
+            CalcBoxColors.Surface.glass
+                .background(.ultraThinMaterial)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 16)
+                        .stroke(
+                            LinearGradient(
+                                colors: [
+                                    Color.white.opacity(0.3),
+                                    Color.white.opacity(0.1)
+                                ],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            ),
+                            lineWidth: 1
+                        )
+                )
         }
     }
 }

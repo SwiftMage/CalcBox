@@ -92,6 +92,13 @@ extension Calculator {
             icon: "arrow.up.circle.fill",
             destination: AnyView(InflationCalculatorView())
         ),
+        Calculator(
+            name: "Debt Payoff Calculator",
+            description: "Compare debt elimination strategies",
+            category: .financial,
+            icon: "creditcard.trianglebadge.exclamationmark",
+            destination: AnyView(DebtPayoffView())
+        ),
         
         // Travel
         Calculator(
