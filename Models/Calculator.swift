@@ -187,6 +187,13 @@ extension Calculator {
             icon: "bed.double.fill",
             destination: AnyView(SleepDebtCalculatorView())
         ),
+        Calculator(
+            name: "Daily Calorie Calculator",
+            description: "Calculate BMR, TDEE, and daily calorie needs",
+            category: .health,
+            icon: "flame.circle.fill",
+            destination: AnyView(DailyCaloriesView())
+        ),
         
         // Utilities
         Calculator(
